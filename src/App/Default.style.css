@@ -1,0 +1,65 @@
+.content-container {
+  position: absolute;
+  top: 80px;
+  left: 200px;
+  right: 0px;
+  bottom: 0px;
+  padding: 20px;
+  background-color: #f2f2f2;
+  overflow: auto;
+  padding-bottom: 140px;
+}
+
+.page-header {
+  color: #000;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #006600;
+  margin-bottom: 10px;
+}
+.page-header span.dash {
+  color: #a6a6a6;
+  font-size: 14px;
+}
+.page-header span.parent-title {
+  color: #a6a6a6;
+  font-size: 14px;
+}
+
+.box-container {
+  padding: 10px;
+  background-color:#fff;
+  border: 5px solid #d9d9d9;
+  border-radius: 10px;
+}
+.form-button-container {
+  text-align: right;
+  padding: 5px 20px;
+  border-top: 1px solid #d9d9d9;
+}
+
+.date-picker {
+  padding: 6px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  color: #495057;
+}
+
+.label-column {
+  width: 250px;
+}
+
+.form-check-input {
+  margin-top: 0px !important;
+  margin-left: 0px !important;
+}
+
+.promo {
+  display: inline-block;
+  background-color: #00ace6;
+  color: #fff;
+  border-radius: 8px;
+  padding: 1px 4px;
+  font-size: 12px;
+  margin-right: 3px;
+  font-family: monospace;
+}

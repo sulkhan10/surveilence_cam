@@ -1,0 +1,16 @@
+.loading-container{
+    position: absolute;
+    top:0px;
+    bottom:0px;
+    left:0px;
+    right:0px;
+    background-color:rgba(0,0,0,.7);
+    z-index: 1000;
+}
+
+.loading-container .gif-container{
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+}

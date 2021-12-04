@@ -1,0 +1,124 @@
+.pictureuploader-container{
+    padding:5px;
+}
+
+.pictureuploader-info-container{
+    margin-top:5px;
+}
+.warning-info{
+    float:left;
+    color:#cc0000;
+    font-size: 12px;
+}
+.max-file-info{
+    float:right;
+    color:#999999;
+    font-size: 12px;
+}
+
+.pictureuploader-droparea{
+    border-radius:5px;
+    border:3px dashed #d9d9d9;
+    background-color:#f2f2f2;
+    min-height:200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pictureuploader-button-container{
+    padding:5px 15px 0px 15px;
+}
+
+.drag-caption{
+    position: absolute;
+    text-align: center;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    color:#b3b3b3;
+}
+
+.pic-col-video{
+    padding:10px;
+    margin: auto;
+    position: relative;
+}
+.pic-col-video img{
+    width:100%;
+}
+
+.pic-col-video .delete{
+    color:#f2f2f2;
+    position: absolute;
+    top:10px;
+    right:20px;
+}
+.pic-col-video .delete:hover{
+    color:#cc0000;
+    cursor: pointer;
+}
+
+.pic-col-video .delete-vid{
+    color:#ff0000;
+    position: absolute;
+    top:10px;
+    right:-25px;
+}
+.pic-col-video .delete-vid:hover{
+    color:#008cff;
+    cursor: pointer;
+}
+
+.pictureuploader-onupload{
+    position: absolute;
+    top:0px;
+    bottom:0px;
+    left:0px;
+    right:0px;
+    z-index: 100;
+    /*background: rgba(0,0,0,.4);*/
+}
+.pictureuploader-onupload::after{
+    content: "";
+    position: absolute;
+    top:0px;
+    bottom:0px;
+    left:0px;
+    right:0px;
+    z-index: 90;
+    background:url('../../../Assets/Images/bg-pattern.jpg');
+    opacity: 0.5;
+}
+
+.pictureuploader-onupload .loading-container{
+    width:180px;
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    z-index: 110;
+    
+}
+.pictureuploader-onupload .loading-container .bar-container{
+    width:100%;
+    height:20px;
+    background-color:#f2f2f2;
+    border-radius:3px;
+    border:1px solid #b3b3b3;
+    overflow: hidden;
+    box-shadow: 0px 0px 4px 1px rgba(0,0,0,.3) inset;
+    
+}
+.pictureuploader-onupload .loading-container .bar-container .bar{
+    height:19px;
+    background-color:#0080ff;
+    box-shadow: 0px 0px 4px 1px rgba(0,0,0,.3) inset;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.pictureuploader-onupload .loading-container .upload-text{
+    text-align: center;
+    color:#fff;
+    font-size: 12px;
+}

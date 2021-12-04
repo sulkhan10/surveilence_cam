@@ -1,0 +1,32 @@
+.menuprofile-container{
+    position: absolute;
+    top:52px;
+    right:3px;
+    width:200px;
+    background-color:#fff;
+    border:1px solid #d9d9d9;
+    z-index: 120;
+}
+
+.menuprofile-link{
+    padding: 5px 10px;
+    font-size: 13px;
+    text-decoration: none;
+    width:100%;
+}
+.menuprofile-link:hover{
+    background-color:#e6e6e6;
+    cursor: pointer;
+}
+.none-decoration{
+    color:#000;
+    width: 100%;
+    display: block;
+}
+.none-decoration:hover{
+    color:#000;
+    text-decoration: none;
+}
+.logout{
+    border-top:1px solid #d9d9d9;
+}

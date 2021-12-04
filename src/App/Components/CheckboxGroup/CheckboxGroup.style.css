@@ -1,0 +1,12 @@
+.checkbox-group-container{
+    border:1px solid #d9d9d9;
+    border-radius:0.25em;
+    padding:4px 8px;
+}
+.checkbox-group-container .checkbox-container{
+    padding: 3px 5px; 
+}
+.checkbox-group-container .checkbox-container input[type=checkbox]{
+    width:16px;
+    height:16px;
+}

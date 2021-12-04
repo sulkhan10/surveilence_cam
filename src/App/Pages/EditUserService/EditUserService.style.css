@@ -1,0 +1,51 @@
+.custom-checkbox{
+    margin-top:0px !important;
+    margin-left:0px !important;
+    position: relative !important;
+    height: 20px;
+    width: 20px;
+}
+
+.form-detail{
+    padding-top:5px;
+    padding-bottom:5px;
+}
+
+.form-detail .detail-title{
+    padding-bottom:4px;
+    border-bottom:1px solid #999999;
+    font-size: 16px;
+    color:#006bb3;
+}
+
+.detail-info-input{
+    padding-top:10px;
+    padding-bottom:10px;
+}
+.detail-info-list{
+    border-top:1px solid #d9d9d9;
+    padding-bottom:15px;
+}
+.detail-info-list .no-data-available{
+    font-size: 16px;
+    color:#888;
+    padding:8px;
+    text-align: center;
+    background-color:#f2f2f2;
+}
+.detail-info-list table{
+    width:100%;
+}
+.detail-info-list td{
+    padding:4px 8px;
+    border-bottom:1px solid #d9d9d9;
+}
+.td-field{
+    width:200px;
+}
+.td-doubledot{
+    width:20px;
+}
+.td-button{
+    width:100px;
+}
