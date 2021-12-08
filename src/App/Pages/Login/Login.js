@@ -1,12 +1,16 @@
 import React, { Component } from "react";
 //import { Link, Redirect } from 'react-router-dom';
 import axios from "axios";
-import { Button } from "reactstrap";
 import { serverUrl } from "../../../config.js";
-
 import "./Login.style.css";
 import { activeLanguage } from "../../../config";
 import { getLanguage } from "../../../languages";
+import { Button, Typography } from "@mui/material";
+const stylesListComent = {
+  inline: {
+    display: "inline",
+  },
+};
 
 class Login extends Component {
   constructor(props) {
@@ -79,22 +83,11 @@ class Login extends Component {
           <div className="logo">
             <img
               width="100"
-              src={require("../../../Assets/Images/CaptivaChevyClub.png")}
+              src={require("../../../Assets/Images/sss_logo.png")}
               alt="logo"
             />
           </div>
-          <div
-            style={{
-              fontSize: 20,
-              textAlign: "center",
-              fontWeight: "bold",
-              color: "#006432",
-              justifyContent: "center",
-              marginBottom: 6,
-            }}
-          >
-            CAPTIVA CHEVY CLUB
-          </div>
+
           <div
             style={{
               fontSize: 16,
@@ -105,7 +98,7 @@ class Login extends Component {
               marginBottom: 20,
             }}
           >
-            Connecting Estate Community
+            Smart Surveillance System
           </div>
           <div className="login-input">
             <input
@@ -129,8 +122,25 @@ class Login extends Component {
           </div>
           <div className="login-error">{this.renderError()}</div>
           <div className="button-container">
-            <Button color="primary" onClick={() => this.doLogin()} block>
-              {this.language["login"]}
+            <Button
+              variant="contained"
+              style={{ backgroundColor: "#2f881a", width: "100%" }}
+              onClick={() => this.doLogin()}
+              block
+            >
+              <Typography
+                component="span"
+                variant="subtitle2"
+                style={
+                  (stylesListComent.inline,
+                  {
+                    color: "#fff",
+                    fontWeight: "bolder",
+                  })
+                }
+              >
+                {this.language["login"]}
+              </Typography>
             </Button>
           </div>
         </div>

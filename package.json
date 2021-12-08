@@ -2,7 +2,7 @@
   "name": "reactbasecp",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/3C_CP",
+  "homepage": "/SmartSurveillanceSystem",
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^31.0.0",
     "@ckeditor/ckeditor5-build-decoupled-document": "^31.0.0",

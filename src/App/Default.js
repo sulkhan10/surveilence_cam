@@ -93,6 +93,7 @@ import ListCommoditySub from "./Pages/ListCommodity/ListCommoditySub";
 import PaymentTransactionMerchantPage from "./Pages/PaymentTransaction/PaymentTransactionMerchant";
 import InputCommodityAcc from "./Pages/InputCommodity/InputCommodityMerchant";
 import EditCommodityMerchant from "./Pages/EditCommodity/EditCommodityMerchant";
+import GroupListPage from "./Pages/Group/GroupList";
 
 class Default extends Component {
   constructor(props) {
@@ -2844,6 +2845,16 @@ class Default extends Component {
                 path={`${match.path}/membernumber`}
                 render={(props) => (
                   <MemberNumberPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.path}/group`}
+                render={(props) => (
+                  <GroupListPage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}

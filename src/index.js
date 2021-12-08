@@ -8,7 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 ReactDOM.render(
-  <BrowserRouter basename="/3C_CP">
+  <BrowserRouter basename="/SmartSurveillanceSystem">
     <App />
   </BrowserRouter>,
   document.getElementById("root")
