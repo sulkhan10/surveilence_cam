@@ -94,6 +94,7 @@ import PaymentTransactionMerchantPage from "./Pages/PaymentTransaction/PaymentTr
 import InputCommodityAcc from "./Pages/InputCommodity/InputCommodityMerchant";
 import EditCommodityMerchant from "./Pages/EditCommodity/EditCommodityMerchant";
 import GroupListPage from "./Pages/Group/GroupList";
+import DevicesPage from "./Pages/Devices/Devices";
 
 class Default extends Component {
   constructor(props) {
@@ -2855,6 +2856,16 @@ class Default extends Component {
                 path={`${match.path}/group`}
                 render={(props) => (
                   <GroupListPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.path}/devices`}
+                render={(props) => (
+                  <DevicesPage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}
