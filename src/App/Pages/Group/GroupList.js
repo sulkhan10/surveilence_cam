@@ -8,11 +8,54 @@ import "react-table/react-table.css";
 import { serverUrl } from "../../../config.js";
 import { activeLanguage } from "../../../config";
 import { getLanguage } from "../../../languages";
-import { Box, Paper, Grid, Typography, Button } from "@mui/material";
-import { Refresh, Edit, Delete, AddBox } from "@mui/icons-material";
+import SelectMultiColumn from "../../Components/SelectMultiColumn/SelectMultiColumn";
+import {
+  Box,
+  Paper,
+  Grid,
+  Typography,
+  Button,
+  Dialog,
+  AppBar,
+  Toolbar,
+  DialogActions,
+  DialogContent,
+  IconButton,
+  DialogContentText,
+  Stack,
+  Alert,
+} from "@mui/material";
+import { Input } from "reactstrap";
+import {
+  Refresh,
+  Edit,
+  Delete,
+  AddBox,
+  Close,
+  Save,
+  Cancel,
+} from "@mui/icons-material";
 const stylesListComent = {
   inline: {
     display: "inline",
+  },
+};
+
+const stylesListDialog = {
+  inline: {
+    display: "inline",
+  },
+};
+
+const stylesDialog = {
+  appBar: {
+    position: "relative",
+    backgroundColor: "#036b50",
+  },
+  title: {
+    marginLeft: 0,
+    flex: 1,
+    fontSize: 16,
   },
 };
 
@@ -25,6 +68,19 @@ class GroupListPage extends Component {
     this.state = {
       tableData: [],
       filter: "",
+      groupId: 0,
+      groupName: "",
+      isAvailable: 0,
+      isAvailableShow: [
+        { value: 0, text: "HIDDEN" },
+        { value: 1, text: "SHOW" },
+      ],
+      setOpenValidation: false,
+      openSuccess: false,
+      openSuccessText: "",
+      setOpenAddNew: false,
+      setOpenEdit: false,
+      rowDetail: [],
     };
 
     this.tableColumns = [
@@ -38,13 +94,13 @@ class GroupListPage extends Component {
       {
         Header: "Group Name",
         headerStyle: { fontWeight: "bold" },
-        accessor: "phoneno",
+        accessor: "groupName",
         style: { textAlign: "center" },
       },
       {
         Header: "Is Available",
         headerStyle: { fontWeight: "bold" },
-        accessor: "name",
+        accessor: "isAvailable",
         style: { textAlign: "center" },
       },
 
@@ -103,21 +159,30 @@ class GroupListPage extends Component {
     ];
   }
 
+  changeSelectIsavailable = (isAvailable) => {
+    this.setState({ isAvailable: isAvailable });
+  };
+
   doRowEdit = (row) => {
-    this.props.history.push("/panel/editadmin/" + row.phoneno);
+    this.setState({
+      setOpenEdit: true,
+      groupId: row.groupId,
+      groupName: row.groupName,
+      isAvailable: row.isAvailable === "SHOW" ? 1 : 0,
+    });
   };
 
   doRowDelete = (row) => {
     // console.log(row);
     confirmAlert({
-      message: this.language.confirmdelete,
+      message: "Are you sure want to delete group " + row.groupName + "?",
       buttons: [
         {
           label: "Yes",
           onClick: (phoneno) => {
-            var phoneno = row.phoneno;
-            // console.log(phoneno);
-            this.deleteAdmin(phoneno);
+            var groupId = row.groupId;
+            // console.log(groupId);
+            this.deleteGroup(groupId);
           },
         },
         {
@@ -128,17 +193,18 @@ class GroupListPage extends Component {
   };
 
   addNew = () => {
-    this.props.history.push("/panel/inputadmin");
+    // this.props.history.push("/panel/inputadmin");
+    this.setState({
+      setOpenAddNew: true,
+    });
   };
 
   doSearch = () => {
     this.props.doLoading();
     axios
       .post(
-        serverUrl + "admin_list.php",
-        {
-          filter: this.state.filter,
-        },
+        serverUrl + "group_list.php",
+        {},
 
         {
           headers: {
@@ -162,13 +228,13 @@ class GroupListPage extends Component {
       });
   };
 
-  deleteAdmin = (phoneno) => {
+  deleteGroup = (groupId) => {
     this.props.doLoading();
     axios
       .post(
-        serverUrl + "admin_delete.php",
+        serverUrl + "group_delete.php",
         {
-          phoneno: phoneno,
+          groupId: groupId,
         },
 
         {
@@ -179,9 +245,10 @@ class GroupListPage extends Component {
       )
       .then((response) => {
         this.props.doLoading();
-        alert(this.language.deletesuccess);
-        //window.location.reload()
-        this.doSearch();
+        this.setState({
+          openSuccess: true,
+          openSuccessText: "Data deleted successfully",
+        });
       })
       .catch((error) => {
         this.props.doLoading();
@@ -194,10 +261,8 @@ class GroupListPage extends Component {
     this.props.doLoading();
     axios
       .post(
-        serverUrl + "admin_list.php",
-        {
-          filter: "",
-        },
+        serverUrl + "group_list.php",
+        {},
 
         {
           headers: {
@@ -224,14 +289,12 @@ class GroupListPage extends Component {
 
   reset = () => {
     let data = "";
-    this.setState({ filter: data });
+    this.setState({ filter: data, openSuccess: false, openSuccessText: "" });
     this.props.doLoading();
     axios
       .post(
-        serverUrl + "admin_list.php",
-        {
-          filter: "",
-        },
+        serverUrl + "group_list.php",
+        {},
 
         {
           headers: {
@@ -256,30 +319,127 @@ class GroupListPage extends Component {
       });
   };
 
-  handleCloseDialogTopUp = () => {
+  onSubmit = () => {
+    let params = {
+      groupId: this.state.groupId,
+      groupName: this.state.groupName,
+      isAvailable: this.state.isAvailable,
+    };
+
+    this.props.doLoading();
+    axios
+      .post(serverUrl + "group_insert_update.php", params, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        },
+      })
+      .then((response) => {
+        this.props.doLoading();
+        this.setState({
+          openSuccess: true,
+          openSuccessText:
+            this.state.setOpenEdit === true
+              ? "Edit data successfully updated"
+              : "Data save successfully",
+        });
+        this.handleCloseAddNew();
+        this.handleCloseEdit();
+      })
+      .catch((error) => {
+        this.props.doLoading();
+        console.log(error);
+        alert(error);
+      });
+  };
+
+  checkData = () => {
+    const { groupName } = this.state;
+
+    if (groupName === "") {
+      this.setState({
+        messageError: "Enter group name.",
+        setOpenValidation: true,
+      });
+    } else {
+      this.onSubmit();
+    }
+  };
+
+  handleCloseValid = () => {
     this.setState({
-      setOpenDialogPopUp: false,
+      setOpenValidation: false,
+      error: "",
     });
   };
 
-  renderDialogA = () => {
+  renderDialogValidation = () => {
     return (
       <Dialog
-        onClose={this.handleCloseDialogTopUp}
+        open={this.state.setOpenValidation}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        titleStyle={{ textAlign: "center" }}
+      >
+        <DialogContent style={{ minWidth: 250, width: 300, marginTop: 10 }}>
+          <DialogContentText id="alert-dialog-description">
+            <Typography
+              component="span"
+              variant="body2"
+              style={(stylesListDialog.inline, { fontSize: 14, color: "#333" })}
+            >
+              {this.state.messageError}
+            </Typography>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={this.handleCloseValid}
+            color="primary"
+            variant="outlined"
+            size="small"
+          >
+            <Typography
+              component="span"
+              variant="body2"
+              style={
+                (stylesListDialog.inline,
+                { fontSize: 14, fontWeight: "bold", color: "#2e6da4" })
+              }
+            >
+              OK
+            </Typography>
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  handleCloseAddNew = () => {
+    this.setState({
+      setOpenAddNew: false,
+      groupName: "",
+      isAvailable: 0,
+    });
+  };
+
+  renderDialogAddNew = () => {
+    return (
+      <Dialog
+        onClose={this.handleCloseAddNew}
         aria-labelledby="customized-dialog-title"
-        open={this.state.setOpenDialogPopUp}
-        fullWidth="sm"
-        maxWidth="sm"
+        open={this.state.setOpenAddNew}
+        fullWidth="md"
+        maxWidth="md"
       >
         <AppBar style={stylesDialog.appBar}>
           <Toolbar>
             <Typography variant="h5" style={stylesDialog.title}>
-              Top Up
+              Add Group
             </Typography>
             <IconButton
               edge="end"
               color="inherit"
-              onClick={() => this.handleCloseDialogTopUp()}
+              onClick={() => this.handleCloseAddNew()}
               aria-label="close"
             >
               <Close />
@@ -287,7 +447,7 @@ class GroupListPage extends Component {
           </Toolbar>
         </AppBar>
         <DialogContent dividers>
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 1 }} style={{ marginBottom: 60, marginTop: 20 }}>
             <Grid container spacing={2}>
               <Grid item xs={2}>
                 <Typography
@@ -297,25 +457,53 @@ class GroupListPage extends Component {
                     // fontSize: 16,
                     float: "left",
                     marginTop: 6,
-                    color: "#005379",
+                    color: "#036b50",
                     fontWeight: "bold",
                     textTransform: "capitalize",
                   }}
                 >
-                  Amount
+                  Group Name
                 </Typography>
               </Grid>
               <Grid item xs={10}>
                 <Input
                   autoComplete="off"
-                  type="number"
-                  name="amount"
-                  id="amount"
-                  placeholder="Enter amount"
-                  value={this.state.amount}
+                  type="text"
+                  name="groupname"
+                  id="groupname"
+                  placeholder="Enter group name"
+                  value={this.state.groupName}
                   onChange={(event) =>
-                    this.setState({ topUpAmount: event.target.value })
+                    this.setState({ groupName: event.target.value })
                   }
+                />
+              </Grid>
+
+              <Grid item xs={2}>
+                <Typography
+                  component="span"
+                  variant="subtitle1"
+                  style={{
+                    // fontSize: 16,
+                    float: "left",
+                    marginTop: 6,
+                    color: "#036b50",
+                    fontWeight: "bold",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  Is Available
+                </Typography>
+              </Grid>
+              <Grid item xs={10}>
+                <SelectMultiColumn
+                  width={"100%"}
+                  value={this.state.isAvailable}
+                  valueColumn={"value"}
+                  showColumn={"text"}
+                  columns={["text"]}
+                  data={this.state.isAvailableShow}
+                  onChange={this.changeSelectIsavailable}
                 />
               </Grid>
             </Grid>
@@ -323,15 +511,226 @@ class GroupListPage extends Component {
         </DialogContent>
         <DialogActions>
           <Button
-            variant="outlined"
-            onClick={this.doTopUpBalancePPOB}
-            color="primary"
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#d0021b",
+            }}
+            startIcon={<Cancel />}
+            onClick={() => this.handleCloseAddNew()}
           >
-            Send
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Cancel
+            </Typography>
+          </Button>
+          &nbsp;&nbsp;
+          <Button
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#004dcf",
+            }}
+            startIcon={<Save />}
+            onClick={() => this.checkData()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Save
+            </Typography>
           </Button>
         </DialogActions>
       </Dialog>
     );
+  };
+
+  handleCloseEdit = () => {
+    this.setState({
+      setOpenEdit: false,
+      groupId: 0,
+      groupName: "",
+      isAvailable: 0,
+    });
+  };
+
+  renderDialogEdit = () => {
+    return (
+      <Dialog
+        onClose={this.handleCloseEdit}
+        aria-labelledby="customized-dialog-title"
+        open={this.state.setOpenEdit}
+        fullWidth="md"
+        maxWidth="md"
+      >
+        <AppBar style={stylesDialog.appBar}>
+          <Toolbar>
+            <Typography variant="h5" style={stylesDialog.title}>
+              Edit Group
+            </Typography>
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={() => this.handleCloseEdit()}
+              aria-label="close"
+            >
+              <Close />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <DialogContent dividers>
+          <Box sx={{ flexGrow: 1 }} style={{ marginBottom: 60, marginTop: 20 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={2}>
+                <Typography
+                  component="span"
+                  variant="subtitle1"
+                  style={{
+                    // fontSize: 16,
+                    float: "left",
+                    marginTop: 6,
+                    color: "#036b50",
+                    fontWeight: "bold",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  Group Name
+                </Typography>
+              </Grid>
+              <Grid item xs={10}>
+                <Input
+                  autoComplete="off"
+                  type="text"
+                  name="groupname"
+                  id="groupname"
+                  placeholder="Enter group name"
+                  value={this.state.groupName}
+                  onChange={(event) =>
+                    this.setState({ groupName: event.target.value })
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={2}>
+                <Typography
+                  component="span"
+                  variant="subtitle1"
+                  style={{
+                    // fontSize: 16,
+                    float: "left",
+                    marginTop: 6,
+                    color: "#036b50",
+                    fontWeight: "bold",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  Is Available
+                </Typography>
+              </Grid>
+              <Grid item xs={10}>
+                <SelectMultiColumn
+                  width={"100%"}
+                  value={this.state.isAvailable}
+                  valueColumn={"value"}
+                  showColumn={"text"}
+                  columns={["text"]}
+                  data={this.state.isAvailableShow}
+                  onChange={this.changeSelectIsavailable}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#d0021b",
+            }}
+            startIcon={<Cancel />}
+            onClick={() => this.handleCloseEdit()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Cancel
+            </Typography>
+          </Button>
+          &nbsp;&nbsp;
+          <Button
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#004dcf",
+            }}
+            startIcon={<Save />}
+            onClick={() => this.checkData()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Save
+            </Typography>
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  renderSuccess = () => {
+    if (this.state.openSuccess === true) {
+      setTimeout(() => this.reset(), 1000);
+
+      return (
+        <div style={{ margin: 10 }}>
+          <Stack sx={{ width: "100%" }} spacing={2}>
+            <Alert
+              variant="filled"
+              severity="success"
+              action={
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  size="small"
+                  // onClick={() => this.reset()}
+                >
+                  <Close fontSize="inherit" />
+                </IconButton>
+              }
+              sx={{ mb: 2 }}
+            >
+              {this.state.openSuccessText}
+            </Alert>
+          </Stack>
+        </div>
+      );
+    }
   };
 
   render() {
@@ -430,6 +829,10 @@ class GroupListPage extends Component {
             defaultPageSize={5}
           />
         </div>
+        {this.renderDialogAddNew()}
+        {this.renderDialogValidation()}
+        {this.renderSuccess()}
+        {this.renderDialogEdit()}
       </Box>
     );
   }

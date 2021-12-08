@@ -218,7 +218,7 @@ class InputAdmin extends Component {
         this.setState({
           openSuccess: true,
         });
-        // this.props.history.push("/panel/listadmin");
+        // this.props.history.push("/panel/admin");
       })
       .catch((error) => {
         this.props.doLoading();
@@ -286,7 +286,7 @@ class InputAdmin extends Component {
 
   renderSuccess = () => {
     if (this.state.openSuccess === true) {
-      setTimeout(() => this.props.history.push("/panel/listadmin"), 1000);
+      setTimeout(() => this.props.history.push("/panel/admin"), 1000);
 
       return (
         <div style={{ margin: 10 }}>
@@ -299,7 +299,7 @@ class InputAdmin extends Component {
                   aria-label="close"
                   color="inherit"
                   size="small"
-                  onClick={() => this.props.history.push("/panel/listadmin")}
+                  onClick={() => this.props.history.push("/panel/admin")}
                 >
                   <Close fontSize="inherit" />
                 </IconButton>
@@ -325,7 +325,7 @@ class InputAdmin extends Component {
               backgroundColor: "#006432",
             }}
             startIcon={<ArrowBackIos />}
-            onClick={() => this.props.history.push("/panel/listadmin")}
+            onClick={() => this.props.history.push("/panel/admin")}
           >
             <Typography
               variant="button"
@@ -634,7 +634,7 @@ class InputAdmin extends Component {
                 backgroundColor: "#d0021b",
               }}
               startIcon={<Cancel />}
-              onClick={() => this.props.history.push("/panel/listadmin")}
+              onClick={() => this.props.history.push("/panel/admin")}
             >
               <Typography
                 variant="button"

@@ -107,29 +107,6 @@ class EditAdmin extends Component {
       });
   };
 
-  getAdminMerchant = (phone) => {
-    axios
-      .post(
-        serverUrl + "admin_merchat_getId.php",
-        {
-          phoneno: phone,
-        },
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-        }
-      )
-      .then((response) => {
-        let tmp = response.data.record;
-        this.setState({ merchantId: tmp.merchantId });
-      })
-      .catch((error) => {
-        console.log(error);
-        alert(error);
-      });
-  };
-
   changeSelectMultiColumn = (logintypeid) => {
     this.setState({ logintype: logintypeid });
   };
@@ -189,7 +166,7 @@ class EditAdmin extends Component {
 
   componentDidMount = (dataShow) => {
     this.selectRole(dataShow);
-    this.getrMerchant();
+    // this.getrMerchant();
     this.props.doLoading();
     axios
       .post(
@@ -218,8 +195,6 @@ class EditAdmin extends Component {
         this.setState({ email: response.data.record.email });
         this.setState({ issuspend: response.data.record.issuspend });
         this.setState({ communityList: response.data.record.community });
-
-        this.getAdminMerchant(response.data.record.phoneno);
       })
       .catch((error) => {
         this.props.doLoading();
@@ -262,7 +237,7 @@ class EditAdmin extends Component {
         this.setState({
           openSuccess: true,
         });
-        // this.props.history.push("/panel/listadmin");
+        // this.props.history.push("/panel/admin");
       })
       .catch((error) => {
         this.props.doLoading();
@@ -329,7 +304,7 @@ class EditAdmin extends Component {
 
   renderSuccess = () => {
     if (this.state.openSuccess === true) {
-      setTimeout(() => this.props.history.push("/panel/listadmin"), 1000);
+      setTimeout(() => this.props.history.push("/panel/admin"), 1000);
 
       return (
         <div style={{ margin: 10 }}>
@@ -342,7 +317,7 @@ class EditAdmin extends Component {
                   aria-label="close"
                   color="inherit"
                   size="small"
-                  onClick={() => this.props.history.push("/panel/listadmin")}
+                  onClick={() => this.props.history.push("/panel/admin")}
                 >
                   <Close fontSize="inherit" />
                 </IconButton>
@@ -368,7 +343,7 @@ class EditAdmin extends Component {
               backgroundColor: "#006432",
             }}
             startIcon={<ArrowBackIos />}
-            onClick={() => this.props.history.push("/panel/listadmin")}
+            onClick={() => this.props.history.push("/panel/admin")}
           >
             <Typography
               variant="button"
@@ -646,7 +621,7 @@ class EditAdmin extends Component {
                 backgroundColor: "#d0021b",
               }}
               startIcon={<Cancel />}
-              onClick={() => this.props.history.push("/panel/listadmin")}
+              onClick={() => this.props.history.push("/panel/admin")}
             >
               <Typography
                 variant="button"
