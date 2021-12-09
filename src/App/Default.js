@@ -95,6 +95,7 @@ import InputCommodityAcc from "./Pages/InputCommodity/InputCommodityMerchant";
 import EditCommodityMerchant from "./Pages/EditCommodity/EditCommodityMerchant";
 import GroupListPage from "./Pages/Group/GroupList";
 import DevicesPage from "./Pages/Devices/Devices";
+import CameraPage from "./Pages/CameraPage/CameraPage";
 
 class Default extends Component {
   constructor(props) {
@@ -2866,6 +2867,16 @@ class Default extends Component {
                 path={`${match.path}/devices`}
                 render={(props) => (
                   <DevicesPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.path}/camera`}
+                render={(props) => (
+                  <CameraPage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}
