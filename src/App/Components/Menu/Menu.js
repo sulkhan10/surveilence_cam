@@ -144,7 +144,7 @@ class Menu extends Component {
           {
             id: 31,
             label: "All Camera",
-            to: "/panel/allcamerea",
+            to: "/panel/camera",
           },
           {
             id: 32,
