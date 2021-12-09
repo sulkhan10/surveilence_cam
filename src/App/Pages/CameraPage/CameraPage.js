@@ -21,14 +21,14 @@ class CameraPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      groupid: "",
+      groupId: "",
       groupShow: [],
     };
   }
 
-  changeGroup = (groupid) => {
+  changeGroup = (groupId) => {
     this.setState({
-      groupid: groupid,
+      groupId: groupId,
     });
   };
 
