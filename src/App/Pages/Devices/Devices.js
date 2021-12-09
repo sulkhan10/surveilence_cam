@@ -773,7 +773,7 @@ class DevicesPage extends Component {
         <br></br>
         <div className="box-container">
           <Iframe
-            url={"http://www.youtube.com/embed/xDMP3i36naA"}
+            url={"http://localhost:8080/"}
             width="100%"
             height="1000px"
             id="myId"
