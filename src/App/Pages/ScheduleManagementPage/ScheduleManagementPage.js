@@ -424,10 +424,10 @@ class ListSchedule extends Component {
 
   handleChange(e) {
     const files = e.target.files;
-    // if (files && files[0]) this.setState({ file: files[0] });
-    this.setState({
-      file: files,
-    });
+    if (files && files[0]) this.setState({ file: files[0] });
+    // this.setState({
+    //   file: files,
+    // });
   }
 
   handleFile() {
