@@ -23,6 +23,7 @@ class CameraPage extends Component {
     this.state = {
       groupId: "",
       groupShow: [],
+      url: "http://localhost:8081/",
     };
   }
 
@@ -56,6 +57,8 @@ class CameraPage extends Component {
   };
 
   render() {
+    const urlCamera = this.state.url + "?groupby=" + this.state.groupId;
+
     return (
       <Box>
         <Box sx={{ flexGrow: 1 }}>
@@ -125,7 +128,7 @@ class CameraPage extends Component {
         <br></br>
         <div className="box-container">
           <Iframe
-            url={"http://localhost:8081/"}
+            url={urlCamera}
             width="100%"
             height="1000px"
             id="myId"
