@@ -424,7 +424,10 @@ class ListSchedule extends Component {
 
   handleChange(e) {
     const files = e.target.files;
-    if (files && files[0]) this.setState({ file: files[0] });
+    // if (files && files[0]) this.setState({ file: files[0] });
+    this.setState({
+      file: files,
+    });
   }
 
   handleFile() {
@@ -445,11 +448,14 @@ class ListSchedule extends Component {
       /* Convert array of arrays */
       const data = XLSX.utils.sheet_to_json(ws);
       console.log("cek data json", data);
+
+      this.doUploadJadwal(data);
+
       /* Update state */
-      this.setState({ data: data, cols: make_cols(ws["!ref"]) }, () => {
-        console.log(JSON.stringify(this.state.data, null, 2));
-        console.log(this.state.data);
-      });
+      // this.setState({ data: data, cols: make_cols(ws["!ref"]) }, () => {
+      // console.log(JSON.stringify(this.state.data, null, 2));
+      // console.log(this.state.data);
+      // });
 
       // this.doUploadJadwal(data);
     };
