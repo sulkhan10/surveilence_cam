@@ -5,6 +5,7 @@ import Iframe from "react-iframe";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
+import "./CameraPage.style.css";
 import { serverUrl } from "../../../config.js";
 import { activeLanguage } from "../../../config";
 import { getLanguage } from "../../../languages";
@@ -125,19 +126,19 @@ class CameraPage extends Component {
             </Grid>
           </Grid>
         </Box>
-        <br></br>
-        <div className="box-container">
-          <Iframe
-            url={urlCamera}
-            width="100%"
-            height="1000px"
-            id="myId"
-            className="myClassname"
-            display="initial"
-            position="relative"
-            // onLoad={this.hideLoading}
-          />
-        </div>
+        {/* <br></br> */}
+        {/* <div className="box-container"> */}
+        <Iframe
+          url={urlCamera}
+          width="100%"
+          height="100%"
+          id="myId"
+          className="iframeSize"
+          display="initial"
+          position="relative"
+          // onLoad={this.hideLoading}
+        />
+        {/* </div> */}
       </Box>
     );
   }
