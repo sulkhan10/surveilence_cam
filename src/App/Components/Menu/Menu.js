@@ -132,6 +132,11 @@ class Menu extends Component {
             label: "Add Device",
             to: "/panel/devices",
           },
+          {
+            id: 23,
+            label: "Schedule",
+            to: "/panel/schedule",
+          },
         ],
       },
 
