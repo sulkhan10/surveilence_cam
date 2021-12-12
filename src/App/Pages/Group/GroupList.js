@@ -368,7 +368,7 @@ class GroupListPage extends Component {
   handleCloseValid = () => {
     this.setState({
       setOpenValidation: false,
-      error: "",
+      messageError: "",
     });
   };
 

@@ -16,16 +16,35 @@ import XLSX from "xlsx";
 import { make_cols } from "../../Components/MakeColumns/MakeColumns";
 import { SheetJSFT } from "../../Components/MakeColumns/types";
 import ReactExport from "react-export-excel";
-import { Box, Paper, Grid, Typography, Button } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Grid,
+  Typography,
+  Button,
+  Dialog,
+  AppBar,
+  Toolbar,
+  DialogActions,
+  DialogContent,
+  IconButton,
+  DialogContentText,
+  Stack,
+  Alert,
+  List,
+} from "@mui/material";
+import { Input } from "reactstrap";
 import {
   Refresh,
   Edit,
   Delete,
   AddBox,
+  Close,
+  Save,
+  Cancel,
   Storage,
   ImportExport,
   Publish,
-  Description,
 } from "@mui/icons-material";
 import subDays from "date-fns/subDays";
 import addDays from "date-fns/addDays";
@@ -49,10 +68,30 @@ const customStyles = {
   },
 };
 
+const stylesListDialog = {
+  inline: {
+    display: "inline",
+  },
+};
+
+const stylesDialog = {
+  appBar: {
+    position: "relative",
+    backgroundColor: "#2f55a2",
+  },
+  title: {
+    marginLeft: 0,
+    flex: 1,
+    fontSize: 16,
+  },
+};
+
 class ListSchedule extends Component {
   constructor(props) {
     super(props);
     this.reactTable = React.createRef();
+    this.reactTableJson = React.createRef();
+    this.fileExcel = React.createRef();
     this.globallang = getLanguage(activeLanguage, "global");
     this.state = {
       tableData: [],
@@ -61,6 +100,21 @@ class ListSchedule extends Component {
       departmentShow: [],
       startDate: moment(),
       endDate: moment(),
+      scheduleId: 0,
+      dateSchedule: "",
+      timeIn: "",
+      timeOut: "",
+      staffName: "",
+      employeeId: "",
+      departmentStaff: "",
+      status: "",
+      golongan: "",
+      keterangan: "",
+      dataJson: [],
+      openResult: false,
+      setOpenValidation: false,
+      setOpenEdit: false,
+      messageError: "",
       file: "",
       data: [],
       cols: [],
@@ -217,6 +271,27 @@ class ListSchedule extends Component {
               variant="contained"
               size="small"
               style={{
+                backgroundColor: "#3f51b5",
+              }}
+              startIcon={<Edit />}
+              onClick={() => this.doRowEdit(e.original)}
+            >
+              <Typography
+                variant="button"
+                style={{
+                  fontSize: 14,
+                  color: "#fff",
+                  textTransform: "capitalize",
+                }}
+              >
+                {this.globallang.edit}
+              </Typography>
+            </Button>
+            &nbsp;
+            <Button
+              variant="contained"
+              size="small"
+              style={{
                 backgroundColor: "#ff0000",
               }}
               startIcon={<Delete />}
@@ -237,11 +312,97 @@ class ListSchedule extends Component {
         ),
       },
     ];
+
+    this.tableColumnsJson = [
+      {
+        Header: "Date",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "TANGGAL",
+        style: { textAlign: "center" },
+        width: 200,
+      },
+      {
+        Header: "Nama",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "NAMA",
+        style: { textAlign: "left" },
+        width: 200,
+      },
+      {
+        Header: "Employee Id",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "EMPLOYEE_ID",
+        style: { textAlign: "left" },
+        width: 200,
+      },
+      {
+        Header: "Department",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "DEPARTMENT",
+        style: { textAlign: "left" },
+        width: 200,
+      },
+      {
+        Header: "Status",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "STATUS",
+        style: { textAlign: "center" },
+        width: 200,
+      },
+      {
+        Header: "Golongan",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "GOLONGAN",
+        style: { textAlign: "center" },
+        width: 200,
+      },
+      {
+        Header: "Keterangan",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "KETERANGAN",
+        style: { textAlign: "center" },
+        width: 200,
+      },
+      {
+        Header: "Time",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "TIME_IN",
+        style: { textAlign: "center" },
+        width: 200,
+        Cell: (e) =>
+          e.original.TIME_IN !== "" ? (
+            <span>
+              {e.original.TIME_IN.substr(0, 5)} -{" "}
+              {e.original.TIME_OUT.substr(0, 5)}
+            </span>
+          ) : (
+            <span></span>
+          ),
+      },
+    ];
   }
 
   componentDidMount = () => {
     this.getDepartment();
     this.getDataBydate(this.state.department);
+  };
+
+  doRowEdit = (row) => {
+    // console.log(row);
+    this.setState({
+      setOpenEdit: true,
+      setOpenForm: true,
+      scheduleId: row.scheduleId,
+      dateSchedule: row.tanggal,
+      staffName: row.name,
+      employeeId: row.employeeId,
+      departmentStaff: row.department,
+      status: row.status,
+      golongan: row.golongan,
+      keterangan: row.keterangan,
+      timeIn: row.time_in,
+      timeOut: row.time_out,
+    });
   };
 
   doRowDelete = (row) => {
@@ -325,45 +486,47 @@ class ListSchedule extends Component {
   reset = () => {
     this.setState({
       department: "",
+      dataJson: [],
+      file: "",
     });
     this.getDataBydate("");
     this.getDepartment();
   };
 
   doUploadJadwal = (dataJadwal) => {
-    // console.log(dataJadwal);
-    this.props.doLoading();
-    let params = {
-      dataUpload: dataJadwal,
-    };
-    // console.log(params);
-    axios
-      .post(
-        "http://202.157.177.50/smarttmp_webapi_cp/rupit_schedule_upload.php",
-        params,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-        }
-      )
-      .then((response) => {
-        this.props.doLoading();
-        // console.log(response);
-        if (response.data.status === "ok") {
-          alert("Upload Successfully");
-          this.setState({
-            file: "",
-          });
-          this.getDataBydate(this.state.department);
-          this.getDepartment();
-        }
-      })
-      .catch((error) => {
-        this.props.doLoading();
-        console.log(error);
-        alert(error);
-      });
+    console.log(dataJadwal);
+    // this.props.doLoading();
+    // let params = {
+    //   dataUpload: dataJadwal,
+    // };
+    // // console.log(params);
+    // axios
+    //   .post(
+    //     "http://202.157.177.50/smarttmp_webapi_cp/rupit_schedule_upload.php",
+    //     params,
+    //     {
+    //       headers: {
+    //         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+    //       },
+    //     }
+    //   )
+    //   .then((response) => {
+    //     this.props.doLoading();
+    //     // console.log(response);
+    //     if (response.data.status === "ok") {
+    //       alert("Upload Successfully");
+    //       this.setState({
+    //         file: "",
+    //       });
+    //       this.getDataBydate(this.state.department);
+    //       this.getDepartment();
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     this.props.doLoading();
+    //     console.log(error);
+    //     alert(error);
+    //   });
   };
 
   getDataBydate = (department) => {
@@ -401,6 +564,73 @@ class ListSchedule extends Component {
       });
   };
 
+  doSubmitForm = () => {
+    this.setState({
+      setOpenForm: false,
+      setOpenEdit: false,
+    });
+    let paramBody = {
+      scheduleId: this.state.scheduleId,
+      dateSchedule: this.state.dateSchedule,
+      staffName: this.state.staffName,
+      employeeId: this.state.employeeId,
+      department: this.state.departmentStaff,
+      status: this.state.status,
+      golongan: this.state.golongan,
+      keterangan: this.state.keterangan,
+      timeIn: this.state.timeIn,
+      timeOut: this.state.timeOut,
+    };
+    // console.log(paramBody);
+    this.props.doLoading();
+    axios
+      .post(
+        "http://202.157.177.50/smarttmp_webapi_cp/rupit_schedule_addupdate.php",
+        paramBody,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          },
+        }
+      )
+      .then((response) => {
+        this.props.doLoading();
+        if (response.data.status === "ok") {
+          alert("Upload Successfully");
+          this.setState({
+            file: "",
+          });
+          this.handleCloseForm();
+          this.getDataBydate(this.state.department);
+          this.getDepartment();
+        }
+      })
+      .catch((error) => {
+        this.props.doLoading();
+        console.log(error);
+        alert(error);
+      });
+  };
+
+  checkDataForm = () => {
+    const { staffName } = this.state;
+    const { employeeId } = this.state;
+
+    if (staffName === "") {
+      this.setState({
+        messageError: "Enter staff name.",
+        setOpenValidation: true,
+      });
+    } else if (employeeId === "") {
+      this.setState({
+        messageError: "Enter employee ID.",
+        setOpenValidation: true,
+      });
+    } else {
+      this.doSubmitForm();
+    }
+  };
+
   changeDepartment = (department) => {
     this.setState({
       department: department,
@@ -431,39 +661,50 @@ class ListSchedule extends Component {
   }
 
   handleFile() {
-    /* Boilerplate to set up FileReader */
-    const reader = new FileReader();
-    const rABS = !!reader.readAsBinaryString;
-
-    reader.onload = (e) => {
-      /* Parse data */
-      const bstr = e.target.result;
-      const wb = XLSX.read(bstr, {
-        type: rABS ? "binary" : "array",
-        bookVBA: true,
-      });
-      /* Get first worksheet */
-      const wsname = wb.SheetNames[0];
-      const ws = wb.Sheets[wsname];
-      /* Convert array of arrays */
-      const data = XLSX.utils.sheet_to_json(ws);
-      console.log("cek data json", data);
-
-      this.doUploadJadwal(data);
-
-      /* Update state */
-      // this.setState({ data: data, cols: make_cols(ws["!ref"]) }, () => {
-      // console.log(JSON.stringify(this.state.data, null, 2));
-      // console.log(this.state.data);
-      // });
-
-      // this.doUploadJadwal(data);
-    };
-
-    if (rABS) {
-      reader.readAsBinaryString(this.state.file);
+    if (this.state.file === "") {
+      alert("File cannot be empty");
     } else {
-      reader.readAsArrayBuffer(this.state.file);
+      /* Boilerplate to set up FileReader */
+      const reader = new FileReader();
+      const rABS = !!reader.readAsBinaryString;
+
+      reader.onload = (e) => {
+        /* Parse data */
+        const bstr = e.target.result;
+        const wb = XLSX.read(bstr, {
+          type: rABS ? "binary" : "array",
+          bookVBA: true,
+        });
+        /* Get first worksheet */
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        /* Convert array of arrays */
+        const data = XLSX.utils.sheet_to_json(ws);
+        // console.log("cek data json", data);
+
+        this.setState({
+          dataJson: data,
+          openResult: true,
+          // file: "",
+        });
+        // this.fileExcel = null;
+
+        // this.doUploadJadwal(data);
+
+        /* Update state */
+        // this.setState({ data: data, cols: make_cols(ws["!ref"]) }, () => {
+        // console.log(JSON.stringify(this.state.data, null, 2));
+        // console.log(this.state.data);
+        // });
+
+        // this.doUploadJadwal(data);
+      };
+
+      if (rABS) {
+        reader.readAsBinaryString(this.state.file);
+      } else {
+        reader.readAsArrayBuffer(this.state.file);
+      }
     }
   }
 
@@ -502,7 +743,7 @@ class ListSchedule extends Component {
         let files = dataFromExcel.filter(
           (elm) => elm.DEPARTMENT !== "" && elm.DEPARTMENT !== undefined
         );
-        console.log("1234", files);
+        // console.log("1234", files);
         // this.doUploadJadwal(files);
       };
       reader.readAsBinaryString(f);
@@ -530,6 +771,537 @@ class ListSchedule extends Component {
     //return result; //JavaScript object
     return result; //JSON
   }
+
+  checkData = () => {
+    this.doUploadJadwal(this.state.dataJson);
+  };
+
+  handleClose = () => {
+    this.setState({
+      openResult: false,
+      dataJson: [],
+    });
+  };
+
+  renderDialogDataJson = () => {
+    return (
+      <Dialog
+        onClose={this.handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={this.state.openResult}
+        fullWidth="lg"
+        maxWidth="lg"
+      >
+        <AppBar style={stylesDialog.appBar}>
+          <Toolbar>
+            <Typography variant="h5" style={stylesDialog.title}>
+              Excel Data Result
+            </Typography>
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={() => this.handleClose()}
+              aria-label="close"
+            >
+              <Close />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <DialogContent dividers>
+          <Box sx={{ flexGrow: 1 }} style={{ marginBottom: 60, marginTop: 20 }}>
+            <ReactTable
+              ref={(r) => (this.reactTableJson = r)}
+              data={this.state.dataJson}
+              columns={this.tableColumnsJson}
+              style={{ backgroundColor: "#f2f2f2" }}
+              filterable
+              defaultFilterMethod={(filter, row) =>
+                String(row[filter.id])
+                  .toLowerCase()
+                  .includes(filter.value.toLowerCase())
+              }
+              defaultPageSize={5}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#d0021b",
+            }}
+            startIcon={<Cancel />}
+            onClick={() => this.handleClose()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Cancel
+            </Typography>
+          </Button>
+          &nbsp;&nbsp;
+          <Button
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#004dcf",
+            }}
+            startIcon={<Save />}
+            onClick={() => this.checkData()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Save
+            </Typography>
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  addNew = () => {
+    this.setState({
+      setOpenForm: true,
+    });
+  };
+
+  handleCloseForm = () => {
+    this.setState({
+      setOpenForm: false,
+      setOpenEdit: false,
+      scheduleId: 0,
+      dateSchedule: "",
+      timeIn: "",
+      timeOut: "",
+      staffName: "",
+      employeeId: "",
+      departmentStaff: "",
+      status: "",
+      golongan: "",
+      keterangan: "",
+    });
+  };
+
+  changeDateSchedule = (event) => {
+    this.setState({ dateSchedule: event.target.value });
+  };
+
+  changeTimeIn = (event) => {
+    this.setState({
+      timeIn: event.target.value,
+    });
+  };
+
+  changeTimeOut = (event) => {
+    this.setState({
+      timeOut: event.target.value,
+    });
+  };
+
+  renderDialogForm = () => {
+    return (
+      <Dialog
+        onClose={this.handleCloseForm}
+        aria-labelledby="customized-dialog-title"
+        open={this.state.setOpenForm}
+        fullWidth="md"
+        maxWidth="md"
+      >
+        <AppBar style={stylesDialog.appBar}>
+          <Toolbar>
+            <Typography variant="h5" style={stylesDialog.title}>
+              {this.state.setOpenEdit === true
+                ? "Edit Schedule"
+                : "Add Schedule"}
+            </Typography>
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={() => this.handleCloseForm()}
+              aria-label="close"
+            >
+              <Close />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <DialogContent dividers>
+          <List>
+            <Box
+              sx={{ flexGrow: 1 }}
+              style={{ marginBottom: 60, marginTop: 20 }}
+            >
+              <Grid container spacing={2}>
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Date
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    type="date"
+                    name="date"
+                    id="exampleDate"
+                    value={this.state.dateSchedule}
+                    onChange={this.changeDateSchedule}
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Staff Name
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    autoComplete="off"
+                    type="text"
+                    name="name"
+                    id="name"
+                    placeholder="Enter staff name"
+                    value={this.state.staffName}
+                    onChange={(event) =>
+                      this.setState({ staffName: event.target.value })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Employee ID
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    autoComplete="off"
+                    type="text"
+                    name="employeeId"
+                    id="employeeId"
+                    placeholder="Enter employee id"
+                    value={this.state.employeeId}
+                    onChange={(event) =>
+                      this.setState({ employeeId: event.target.value })
+                    }
+                  />
+                </Grid>
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Department
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    autoComplete="off"
+                    type="text"
+                    name="department"
+                    id="department"
+                    placeholder="Enter department"
+                    value={this.state.departmentStaff}
+                    onChange={(event) =>
+                      this.setState({ departmentStaff: event.target.value })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Status
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    autoComplete="off"
+                    type="text"
+                    name="status"
+                    id="status"
+                    placeholder="Enter status"
+                    value={this.state.status}
+                    onChange={(event) =>
+                      this.setState({ status: event.target.value })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Golongan
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    autoComplete="off"
+                    type="text"
+                    name="golongan"
+                    id="golongan"
+                    placeholder="Enter golongan"
+                    value={this.state.golongan}
+                    onChange={(event) =>
+                      this.setState({ golongan: event.target.value })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Keterangan
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    autoComplete="off"
+                    type="text"
+                    name="keterangan"
+                    id="keterangan"
+                    placeholder="Enter keterangan"
+                    value={this.state.keterangan}
+                    onChange={(event) =>
+                      this.setState({ keterangan: event.target.value })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Time IN
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    type="time"
+                    name="time"
+                    id="exampleTime"
+                    value={this.state.timeIn}
+                    onChange={this.changeTimeIn}
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#2f55a2",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Time Out
+                  </Typography>
+                </Grid>
+                <Grid item xs={10}>
+                  <Input
+                    type="time"
+                    name="time"
+                    id="exampleTime"
+                    value={this.state.timeOut}
+                    onChange={this.changeTimeOut}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#d0021b",
+            }}
+            startIcon={<Cancel />}
+            onClick={() => this.handleCloseForm()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Cancel
+            </Typography>
+          </Button>
+          &nbsp;&nbsp;
+          <Button
+            variant="contained"
+            size="medium"
+            style={{
+              backgroundColor: "#004dcf",
+            }}
+            startIcon={<Save />}
+            onClick={() => this.checkDataForm()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 12,
+                color: "#fff",
+                textTransform: "capitalize",
+                marginLeft: -6,
+              }}
+            >
+              Save
+            </Typography>
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  handleCloseValid = () => {
+    this.setState({
+      setOpenValidation: false,
+      messageError: "",
+    });
+  };
+
+  renderDialogValidation = () => {
+    return (
+      <Dialog
+        open={this.state.setOpenValidation}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        titleStyle={{ textAlign: "center" }}
+      >
+        <DialogContent style={{ minWidth: 250, width: 300, marginTop: 10 }}>
+          <DialogContentText id="alert-dialog-description">
+            <Typography
+              component="span"
+              variant="body2"
+              style={(stylesListDialog.inline, { fontSize: 14, color: "#333" })}
+            >
+              {this.state.messageError}
+            </Typography>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={this.handleCloseValid}
+            color="primary"
+            variant="outlined"
+            size="small"
+          >
+            <Typography
+              component="span"
+              variant="body2"
+              style={
+                (stylesListDialog.inline,
+                { fontSize: 14, fontWeight: "bold", color: "#2e6da4" })
+              }
+            >
+              OK
+            </Typography>
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
 
   render() {
     return (
@@ -799,6 +1571,7 @@ class ListSchedule extends Component {
                       type="file"
                       className="form-control"
                       id="file"
+                      ref={(r) => (this.fileExcel = r)}
                       accept={SheetJSFT}
                       onChange={this.handleChange}
                     />
@@ -846,6 +1619,9 @@ class ListSchedule extends Component {
             defaultPageSize={5}
           />
         </div>
+        {this.renderDialogDataJson()}
+        {this.renderDialogForm()}
+        {this.renderDialogValidation()}
       </Box>
     );
   }
