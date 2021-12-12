@@ -132,16 +132,16 @@ class Menu extends Component {
             label: "Add Device",
             to: "/panel/devices",
           },
-          {
-            id: 23,
-            label: "Schedule",
-            to: "/panel/schedule",
-          },
-          {
-            id: 24,
-            label: "Attendance",
-            to: "/panel/attendance",
-          },
+          // {
+          //   id: 23,
+          //   label: "Schedule",
+          //   to: "/panel/schedule",
+          // },
+          // {
+          //   id: 24,
+          //   label: "Attendance",
+          //   to: "/panel/attendance",
+          // },
         ],
       },
 
