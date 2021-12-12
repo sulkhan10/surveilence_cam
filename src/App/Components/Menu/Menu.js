@@ -137,6 +137,11 @@ class Menu extends Component {
             label: "Schedule",
             to: "/panel/schedule",
           },
+          {
+            id: 24,
+            label: "Attendance",
+            to: "/panel/attendance",
+          },
         ],
       },
 

@@ -97,6 +97,7 @@ import GroupListPage from "./Pages/Group/GroupList";
 import DevicesPage from "./Pages/Devices/Devices";
 import CameraPage from "./Pages/CameraPage/CameraPage";
 import ListSchedule from "./Pages/ScheduleManagementPage/ScheduleManagementPage";
+import AttendancePage from "./Pages/AttendancePage/AttendancePage";
 
 class Default extends Component {
   constructor(props) {
@@ -2888,6 +2889,16 @@ class Default extends Component {
                 path={`${match.path}/schedule`}
                 render={(props) => (
                   <ListSchedule
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.path}/attendance`}
+                render={(props) => (
+                  <AttendancePage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}
