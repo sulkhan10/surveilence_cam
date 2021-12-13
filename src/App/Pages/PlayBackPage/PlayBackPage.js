@@ -30,6 +30,7 @@ class PlayBackPage extends Component {
     this.setState({
       groupId: groupId,
     });
+    this.setState({ cameraShow: [], cameraId: "" });
     this.cameraList(groupId);
   };
 
@@ -81,9 +82,13 @@ class PlayBackPage extends Component {
       )
       .then((response) => {
         // console.log(response);
-        if (response.data.records) var temp = this.state.cameraShow;
-        temp = response.data.records;
-        this.setState({ cameraShow: temp, cameraId: temp[0].deviceId });
+        if (response.data.records.length > 0) {
+          var temp = this.state.cameraShow;
+          temp = response.data.records;
+          this.setState({ cameraShow: temp, cameraId: temp[0].deviceId });
+        } else {
+          this.setState({ cameraShow: [], cameraId: "" });
+        }
       })
       .catch((error) => {
         console.log(error);
