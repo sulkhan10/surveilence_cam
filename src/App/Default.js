@@ -98,6 +98,7 @@ import DevicesPage from "./Pages/Devices/Devices";
 import CameraPage from "./Pages/CameraPage/CameraPage";
 import ListSchedule from "./Pages/ScheduleManagementPage/ScheduleManagementPage";
 import AttendancePage from "./Pages/AttendancePage/AttendancePage";
+import PlayBackPage from "./Pages/PlayBackPage/PlayBackPage";
 
 class Default extends Component {
   constructor(props) {
@@ -2899,6 +2900,16 @@ class Default extends Component {
                 path={`${match.path}/attendance`}
                 render={(props) => (
                   <AttendancePage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.path}/playback`}
+                render={(props) => (
+                  <PlayBackPage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}
