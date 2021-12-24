@@ -55,7 +55,7 @@ class DevicesPage extends Component {
         <br></br>
         <div className="box-container">
           <Iframe
-            url={"http://localhost:8080/"}
+            url={"http://192.168.0.107:8080/"}
             width="100%"
             height="600px"
             id="myId"
