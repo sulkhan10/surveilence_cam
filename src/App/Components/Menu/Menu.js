@@ -118,30 +118,20 @@ class Menu extends Component {
       },
       {
         id: 2,
-        label: "Main",
+        label: "Master",
         to: "",
         openChild: false,
         childs: [
+          {
+            id: 20,
+            label: "Camera",
+            to: "/panel/devices",
+          },
           {
             id: 21,
             label: "Group",
             to: "/panel/group",
           },
-          {
-            id: 22,
-            label: "Add Device",
-            to: "/panel/devices",
-          },
-          // {
-          //   id: 23,
-          //   label: "Schedule",
-          //   to: "/panel/schedule",
-          // },
-          // {
-          //   id: 24,
-          //   label: "Attendance",
-          //   to: "/panel/attendance",
-          // },
         ],
       },
 
@@ -153,7 +143,7 @@ class Menu extends Component {
         childs: [
           {
             id: 31,
-            label: "All Camera",
+            label: "Live View",
             to: "/panel/camera",
           },
           {
@@ -229,7 +219,7 @@ class Menu extends Component {
         },
         {
           id: 2,
-          label: "Main",
+          label: "Master",
           to: "",
           openChild: false,
           childs: [
@@ -649,7 +639,7 @@ class Menu extends Component {
       return <Dashboard />;
     } else if (label === "User") {
       return <AccountBox />;
-    } else if (label === "Main") {
+    } else if (label === "Master") {
       return <Apps />;
     } else if (label === "Camera") {
       return <Camera />;
@@ -665,11 +655,11 @@ class Menu extends Component {
   };
 
   renderSubMenuIcon = (label) => {
-    if (label === "Add Device") {
+    if (label === "Camera") {
       return <VideoCall />;
     } else if (label === "Group") {
       return <AllInbox />;
-    } else if (label === "All Camera") {
+    } else if (label === "Live View") {
       return <Videocam />;
     } else if (label === "Playback") {
       return <PlayCircleFilled />;
