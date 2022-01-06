@@ -34,7 +34,7 @@ const stylesListDialog = {
     display: "inline",
   },
 };
-
+var player = null;
 const client = new W3CWebSocket("ws://127.0.0.1:8000");
 class AddDevicesPage extends Component {
   constructor(props) {
@@ -72,6 +72,8 @@ class AddDevicesPage extends Component {
       setOpenAddNew: false,
       setOpenEdit: false,
       rowDetail: [],
+      device_connected: false,
+      player: null,
     };
   }
 
@@ -101,6 +103,9 @@ class AddDevicesPage extends Component {
           this.setState({
             openSuccess: true,
           });
+          this.sendRequest("disconnected", {
+            status: "diconnected",
+          });
         }
       })
       .catch((error) => {
@@ -112,6 +117,8 @@ class AddDevicesPage extends Component {
   //========================Function & Method ======================//
 
   componentDidMount = () => {
+    console.log("cek player", player);
+    console.log("cek player state", this.state.player);
     client.onopen = () => {
       console.log("WebSocket Client Connected");
       this.sendRequest("startDiscovery");
@@ -122,13 +129,79 @@ class AddDevicesPage extends Component {
       console.log(dataFromServer);
       if (id === "startDiscovery") {
         console.log("data from server", dataFromServer);
+      } else if (id === "startStreaming") {
+        this.streamCamera(dataFromServer);
       }
+      // else if (id === "stopJsmpeg") {
+      //   this.stopCamera(dataFromServer);
+      // }
     };
-    // var videoUrl = `ws://${this.state.ffmpegIP}:6789/`;
-    // var player = new JSMpeg.VideoElement("#video-canvas", videoUrl, {
-    //   autoplay: true,
-    // });
-    // console.log(player);
+  };
+
+  componentWillUnmount = () => {
+    this.sendRequest("disconnected", {
+      status: "diconnected",
+    });
+  };
+
+  pressedConnectButton = () => {
+    const { testingUrlRtsp } = this.state;
+    if (testingUrlRtsp === "") {
+      this.setState({
+        messageError: "Enter url rtsp.",
+        setOpenValidation: true,
+      });
+    } else {
+      if (this.state.device_connected === true) {
+        this.disconnectCamera();
+      } else {
+        this.connectCamera();
+      }
+    }
+  };
+
+  disconnectCamera = () => {
+    this.sendRequest("disconnected", {
+      status: "diconnected",
+    });
+    player.stop();
+    this.setState({
+      player: null,
+      testingUrlRtsp: "",
+      device_connected: false,
+    });
+  };
+
+  connectCamera = () => {
+    this.sendRequest("connect", {
+      url_rtsp: this.state.testingUrlRtsp,
+    });
+  };
+
+  streamCamera = (data) => {
+    this.setState({
+      device_connected: true,
+    });
+    var videoUrl = `ws://${this.state.ffmpegIP}:${data.wsPort}/`;
+    player = new JSMpeg.VideoElement("#video-canvas", videoUrl, {
+      autoplay: true,
+      control: true,
+      needPlayButton: true,
+    });
+    this.setState({
+      player: player,
+    });
+    console.log(player);
+  };
+
+  stopCamera = (data) => {
+    console.log("destroy streaming");
+    player.stop();
+    this.setState({
+      player: null,
+      testingUrlRtsp: "",
+      device_connected: false,
+    });
   };
 
   sendRequest = (method, params) => {
@@ -605,6 +678,7 @@ class AddDevicesPage extends Component {
                 <Grid container spacing={2}>
                   <Grid item xs={9}>
                     <Input
+                      disabled={this.state.device_connected}
                       autoComplete="off"
                       type="text"
                       name="testingUrlRtsp"
@@ -624,9 +698,7 @@ class AddDevicesPage extends Component {
                         backgroundColor: "#388e3c",
                       }}
                       startIcon={<Videocam />}
-                      onClick={() =>
-                        this.props.history.push("/panel/devicecamera")
-                      }
+                      onClick={() => this.pressedConnectButton()}
                     >
                       <Typography
                         variant="button"
@@ -637,7 +709,9 @@ class AddDevicesPage extends Component {
                           marginLeft: -6,
                         }}
                       >
-                        Test Url RTSP
+                        {this.state.device_connected === false
+                          ? "Test url RTSP"
+                          : "Disconnect"}
                       </Typography>
                     </Button>{" "}
                   </Grid>

@@ -120,7 +120,7 @@ class Menu extends Component {
           {
             id: 31,
             label: "Live View",
-            to: "/panel/camera",
+            to: "/panel/liveView",
           },
           {
             id: 32,

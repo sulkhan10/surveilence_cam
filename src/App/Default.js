@@ -20,6 +20,7 @@ import PlayBackPage from "./Pages/PlayBackPage/PlayBackPage";
 import DeviceCameraPage from "./Pages/Devices/DeviceCamera";
 import AddDevicesPage from "./Pages/Devices/AddDevices";
 import EditDevicesPage from "./Pages/Devices/EditDevices";
+import LiveViewPage from "./Pages/CameraPage/LiveView";
 
 class Default extends Component {
   constructor(props) {
@@ -301,6 +302,17 @@ class Default extends Component {
                 path={`${match.path}/editDevice/:deviceId`}
                 render={(props) => (
                   <EditDevicesPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+
+              <Route
+                path={`${match.path}/liveView`}
+                render={(props) => (
+                  <LiveViewPage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}
