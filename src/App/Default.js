@@ -17,6 +17,9 @@ import GroupListPage from "./Pages/Group/GroupList";
 import DevicesPage from "./Pages/Devices/Devices";
 import CameraPage from "./Pages/CameraPage/CameraPage";
 import PlayBackPage from "./Pages/PlayBackPage/PlayBackPage";
+import DeviceCameraPage from "./Pages/Devices/DeviceCamera";
+import AddDevicesPage from "./Pages/Devices/AddDevices";
+import EditDevicesPage from "./Pages/Devices/EditDevices";
 
 class Default extends Component {
   constructor(props) {
@@ -263,9 +266,41 @@ class Default extends Component {
               />
 
               <Route
+                path={`${match.path}/devicecamera`}
+                render={(props) => (
+                  <DeviceCameraPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+
+              <Route
                 path={`${match.path}/playback`}
                 render={(props) => (
                   <PlayBackPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.path}/addDevices`}
+                render={(props) => (
+                  <AddDevicesPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+
+              <Route
+                path={`${match.path}/editDevice/:deviceId`}
+                render={(props) => (
+                  <EditDevicesPage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { apiCameraSelect } from "../../Service/api";
 import axios from "axios";
 import ReactTable from "react-table";
 import { confirmAlert } from "react-confirm-alert";
@@ -25,7 +26,7 @@ import {
   Stack,
   Alert,
 } from "@mui/material";
-import { Input } from "reactstrap";
+import { Input, FormGroup, Label } from "reactstrap";
 import {
   Refresh,
   Edit,
@@ -34,7 +35,9 @@ import {
   Close,
   Save,
   Cancel,
+  Check,
 } from "@mui/icons-material";
+import Select from "react-select";
 const stylesListComent = {
   inline: {
     display: "inline",
@@ -67,6 +70,7 @@ class GroupListPage extends Component {
     this.language = getLanguage(activeLanguage, "listadmin");
     this.state = {
       tableData: [],
+      tableDisplay: [],
       filter: "",
       groupId: 0,
       groupName: "",
@@ -80,7 +84,12 @@ class GroupListPage extends Component {
       openSuccessText: "",
       setOpenAddNew: false,
       setOpenEdit: false,
+      setOpenFormInfo: false,
       rowDetail: [],
+      selectedOptionDevice: null,
+      optionsDevice: [],
+      deviceSelected: [],
+      itemDeleted: {},
     };
 
     this.tableColumns = [
@@ -159,16 +168,23 @@ class GroupListPage extends Component {
     ];
   }
 
+  handleChangeOptionDevice = (selectedOptionDevice) => {
+    // console.log(selectedOptionDevice);
+    this.setState({ selectedOptionDevice });
+  };
+
   changeSelectIsavailable = (isAvailable) => {
     this.setState({ isAvailable: isAvailable });
   };
 
   doRowEdit = (row) => {
+    // console.log(row);
     this.setState({
       setOpenEdit: true,
       groupId: row.groupId,
       groupName: row.groupName,
       isAvailable: row.isAvailable === "SHOW" ? 1 : 0,
+      tableDisplay: row.info,
     });
   };
 
@@ -257,7 +273,24 @@ class GroupListPage extends Component {
       });
   };
 
+  loadCameraSelect = () => {
+    apiCameraSelect()
+      .then((response) => {
+        let dataresponse = response.data;
+        // console.log(response);
+        if (dataresponse.records.length > 0) {
+          this.setState({
+            optionsDevice: dataresponse.records,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   componentDidMount = () => {
+    this.loadCameraSelect();
     this.props.doLoading();
     axios
       .post(
@@ -324,7 +357,10 @@ class GroupListPage extends Component {
       groupId: this.state.groupId,
       groupName: this.state.groupName,
       isAvailable: this.state.isAvailable,
+      deviceInfo: this.state.tableDisplay,
     };
+
+    // console.log(params);
 
     this.props.doLoading();
     axios
@@ -573,8 +609,8 @@ class GroupListPage extends Component {
         onClose={this.handleCloseEdit}
         aria-labelledby="customized-dialog-title"
         open={this.state.setOpenEdit}
-        fullWidth="md"
-        maxWidth="md"
+        fullWidth="lg"
+        maxWidth="lg"
       >
         <AppBar style={stylesDialog.appBar}>
           <Toolbar>
@@ -651,6 +687,10 @@ class GroupListPage extends Component {
                   onChange={this.changeSelectIsavailable}
                 />
               </Grid>
+              <br />
+              <Grid item xs={12}>
+                <div className="form-detail">{this.renderDeviceInfo()}</div>
+              </Grid>
             </Grid>
           </Box>
         </DialogContent>
@@ -698,6 +738,358 @@ class GroupListPage extends Component {
               Save
             </Typography>
           </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  renderDeviceInfo = () => {
+    return (
+      <div className="form-detail">
+        <div className="page-header">
+          <Typography
+            component="span"
+            variant="h2"
+            style={{
+              fontSize: 16,
+              color: "#006432",
+              fontWeight: "bold",
+              textTransform: "capitalize",
+              float: "left",
+            }}
+          >
+            Device Camera List
+          </Typography>
+          <Button
+            variant="contained"
+            size="small"
+            style={{
+              backgroundColor: "#008b02",
+              float: "right",
+            }}
+            startIcon={<AddBox />}
+            onClick={() => this.addNewInfo()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                fontSize: 14,
+                color: "#fff",
+                textTransform: "capitalize",
+              }}
+            >
+              Add Device
+            </Typography>
+          </Button>
+          <span className="dash">&nbsp;&nbsp;</span>
+        </div>
+        <div className="detail-info-input">
+          <FormGroup>
+            <br></br>
+            <ReactTable
+              ref={(r) => (this.reactTable = r)}
+              data={this.state.tableDisplay}
+              columns={[
+                {
+                  Header: "Device Name",
+                  headerStyle: { fontWeight: "bold" },
+                  accessor: "deviceName",
+                  style: { textAlign: "center" },
+                },
+                {
+                  Header: "Url RTSP",
+                  headerStyle: { fontWeight: "bold" },
+                  accessor: "urlRTSP",
+                  style: { textAlign: "center" },
+                },
+                {
+                  Header: "Action",
+                  headerStyle: { fontWeight: "bold" },
+                  accessor: "",
+                  sortable: true,
+                  filterable: true,
+                  style: { textAlign: "center" },
+                  Cell: (e) => (
+                    <div>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        style={{
+                          backgroundColor: "#ff0000",
+                        }}
+                        startIcon={<Delete />}
+                        onClick={() => this.doRowDeleteInfo(e.original)}
+                      >
+                        <Typography
+                          variant="button"
+                          style={{
+                            fontSize: 14,
+                            color: "#fff",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          Delete
+                        </Typography>
+                      </Button>
+                    </div>
+                  ),
+                },
+              ]}
+              style={{ backgroundColor: "#f2f2f2" }}
+              filterable
+              defaultFilterMethod={(filter, row) =>
+                String(row[filter.id])
+                  .toLowerCase()
+                  .includes(filter.value.toLowerCase())
+              }
+              defaultPageSize={5}
+            />
+          </FormGroup>
+        </div>
+      </div>
+    );
+  };
+
+  addNewInfo = () => {
+    this.setState({
+      setOpenFormInfo: true,
+    });
+  };
+
+  handleCloseRowInfo = () => {
+    this.setState({
+      setOpenFormInfo: false,
+      selectedOptionDevice: null,
+    });
+  };
+
+  renderFormInfo = () => {
+    return (
+      <Dialog
+        open={this.state.setOpenFormInfo}
+        onClose={this.handleCloseRowInfo}
+        aria-labelledby="customized-dialog-title"
+        fullWidth="md"
+        maxWidth="md"
+      >
+        <AppBar style={stylesDialog.appBar}>
+          <Toolbar>
+            <Typography
+              component="span"
+              variant="h2"
+              style={stylesDialog.title}
+            >
+              Add Device
+            </Typography>
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={() => this.handleCloseRowInfo()}
+              aria-label="close"
+            >
+              <Close />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <DialogContent dividers>
+          <Box sx={{ flexGrow: 1 }} style={{ marginBottom: 60, marginTop: 20 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={2}>
+                <Label for="infoName">Device Camera</Label>
+              </Grid>
+              <Grid item xs={10}>
+                <Select
+                  isClearable
+                  classNamePrefix="select"
+                  placeholder="Select For..."
+                  value={this.state.selectedOptionDevice}
+                  onChange={this.handleChangeOptionDevice}
+                  options={this.state.optionsDevice}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            size="small"
+            style={{
+              backgroundColor: "#808080",
+            }}
+            startIcon={<Cancel />}
+            onClick={this.handleCloseRowInfo}
+          >
+            <Typography
+              variant="button"
+              style={{
+                color: "#fff",
+                textTransform: "capitalize",
+              }}
+            >
+              Cancel
+            </Typography>
+          </Button>{" "}
+          <Button
+            variant="contained"
+            size="small"
+            style={{
+              backgroundColor: "#004dcf",
+            }}
+            startIcon={<Save />}
+            onClick={() => this.checkDataInfo()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                color: "#fff",
+                textTransform: "capitalize",
+              }}
+            >
+              Save
+            </Typography>
+          </Button>{" "}
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  checkDataInfo = () => {
+    const { selectedOptionDevice } = this.state;
+    if (selectedOptionDevice === null) {
+      this.setState({
+        messageError: "Select device camera",
+        setOpenValidation: true,
+      });
+    } else {
+      this.doSaveInfoDevice();
+    }
+  };
+
+  doSaveInfoDevice = () => {
+    var infoData = {
+      deviceId: this.state.selectedOptionDevice.deviceId,
+      deviceName: this.state.selectedOptionDevice.deviceName,
+      urlRTSP: this.state.selectedOptionDevice.urlRTSP,
+    };
+
+    var dropDataInfo = this.state.tableDisplay || [];
+    dropDataInfo.push(infoData);
+
+    // console.log(dropDataInfo);
+    this.setState({
+      tableDisplay: dropDataInfo,
+    });
+    this.handleCloseRowInfo();
+  };
+
+  doRowDeleteInfo = (item) => {
+    this.setState({
+      openAlertDelete: true,
+      itemDeleted: item,
+    });
+  };
+
+  handleCloseItemInfo = () => {
+    this.setState({
+      openAlertDelete: false,
+      itemDeleted: {},
+    });
+  };
+
+  doDeleteInfoPaket = () => {
+    let dataDisplay = this.state.tableDisplay;
+    let itemRemove = this.state.itemDeleted;
+    let resultItem = dataDisplay.filter(
+      (obj, i) => obj.deviceId !== itemRemove.deviceId
+    );
+
+    this.setState({
+      tableDisplay: resultItem,
+      openAlertDelete: false,
+      itemDeleted: {},
+    });
+  };
+
+  renderRemoveItemInfo = () => {
+    let item = this.state.itemDeleted;
+    return (
+      <Dialog
+        open={this.state.openAlertDelete}
+        onClose={this.handleCloseItemInfo}
+        aria-labelledby="customized-dialog-title"
+        fullWidth="sm"
+        maxWidth="sm"
+      >
+        <AppBar style={stylesDialog.appBar}>
+          <Toolbar>
+            <Typography
+              component="span"
+              variant="h2"
+              style={stylesDialog.title}
+            >
+              Delete Device
+            </Typography>
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={() => this.handleCloseItemInfo()}
+              aria-label="close"
+            >
+              <Close />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <DialogContent style={{ marginTop: 10 }}>
+          <DialogContentText id="alert-dialog-description">
+            <Typography
+              component="span"
+              variant="body2"
+              style={(stylesListDialog.inline, { fontSize: 16, color: "#333" })}
+            >
+              Are you sure want to delete device {item.deviceName}?
+            </Typography>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            size="small"
+            style={{
+              backgroundColor: "#808080",
+            }}
+            startIcon={<Cancel />}
+            onClick={this.handleCloseItemInfo}
+          >
+            <Typography
+              variant="button"
+              style={{
+                color: "#fff",
+                textTransform: "capitalize",
+              }}
+            >
+              No
+            </Typography>
+          </Button>{" "}
+          <Button
+            variant="contained"
+            size="small"
+            style={{
+              backgroundColor: "#0693e3",
+            }}
+            startIcon={<Check />}
+            onClick={() => this.doDeleteInfoPaket()}
+          >
+            <Typography
+              variant="button"
+              style={{
+                color: "#fff",
+                textTransform: "capitalize",
+              }}
+            >
+              Yes
+            </Typography>
+          </Button>{" "}
         </DialogActions>
       </Dialog>
     );
@@ -833,6 +1225,8 @@ class GroupListPage extends Component {
         {this.renderDialogValidation()}
         {this.renderSuccess()}
         {this.renderDialogEdit()}
+        {this.renderFormInfo()}
+        {this.renderRemoveItemInfo()}
       </Box>
     );
   }

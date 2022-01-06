@@ -1,1 +1,2 @@
-export var webserviceurl = "https://www.phealth.id/api_cp";
+export var webserviceurl =
+  "http://smart-community.csolusi.com/SmartSurveillanceSystem_webapi_cp";

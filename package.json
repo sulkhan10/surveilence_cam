@@ -7,6 +7,7 @@
     "@ckeditor/ckeditor5-build-classic": "^31.0.0",
     "@ckeditor/ckeditor5-build-decoupled-document": "^31.0.0",
     "@ckeditor/ckeditor5-react": "^3.0.3",
+    "@cycjimmy/jsmpeg-player": "^5.0.1",
     "@emotion/react": "^11.5.0",
     "@emotion/styled": "^11.3.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.4",
@@ -38,7 +39,8 @@
     "react-simple-image-viewer": "0.0.7",
     "react-table": "^6.11.5",
     "reactstrap": "^6.4.0",
-    "styled-components": "^5.3.3"
+    "styled-components": "^5.3.3",
+    "websocket": "^1.0.34"
   },
   "scripts": {
     "start": "react-scripts start",

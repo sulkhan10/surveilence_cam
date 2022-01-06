@@ -48,31 +48,7 @@ class Menu extends Component {
     this.selectRole(props.loginInfo);
   }
 
-  componentDidMount = () => {
-    this.loadCount();
-  };
-
-  loadCount = () => {
-    axios
-      .post(
-        serverUrl + "count_order.php",
-        {},
-
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-        }
-      )
-      .then((response) => {
-        let count = response.data.count;
-        this.setState({ count: count });
-      })
-      .catch((error) => {
-        console.log(error);
-        alert(error);
-      });
-  };
+  componentDidMount = () => {};
 
   componentWillReceiveProps = (props) => {
     if (props.community !== this.state.community) {
@@ -125,7 +101,7 @@ class Menu extends Component {
           {
             id: 20,
             label: "Camera",
-            to: "/panel/devices",
+            to: "/panel/devicecamera",
           },
           {
             id: 21,

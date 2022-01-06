@@ -1,12 +1,57 @@
 import React, { Component } from "react";
-import Iframe from "react-iframe";
+import { apiCameraList, apiCameraDelete } from "../../Service/api";
+import { confirmAlert } from "react-confirm-alert";
+import ReactTable from "react-table";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
-import { Box, Paper, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Grid,
+  Typography,
+  Button,
+  Dialog,
+  AppBar,
+  Toolbar,
+  DialogActions,
+  DialogContent,
+  IconButton,
+  DialogContentText,
+  Stack,
+  Alert,
+} from "@mui/material";
+import { Input } from "reactstrap";
+import {
+  Refresh,
+  Edit,
+  Delete,
+  AddBox,
+  Close,
+  Save,
+  Cancel,
+} from "@mui/icons-material";
 const stylesListComent = {
   inline: {
     display: "inline",
+  },
+};
+
+const stylesListDialog = {
+  inline: {
+    display: "inline",
+  },
+};
+
+const stylesDialog = {
+  appBar: {
+    position: "relative",
+    backgroundColor: "#036b50",
+  },
+  title: {
+    marginLeft: 0,
+    flex: 1,
+    fontSize: 16,
   },
 };
 
@@ -16,6 +61,21 @@ class DeviceCameraPage extends Component {
     this.state = {
       tableData: [],
       filter: "",
+      deviceId: 0,
+      deviceName: "",
+      IpAddress: "",
+      urlRTSP: "",
+      videoBitRate: "",
+      frameRate: "",
+      videoSize: "",
+      outputFileFormat: "",
+      videoCodec: "",
+      setOpenValidation: false,
+      openSuccess: false,
+      openSuccessText: "",
+      setOpenAddNew: false,
+      setOpenEdit: false,
+      rowDetail: [],
     };
 
     this.tableColumns = [
@@ -29,13 +89,19 @@ class DeviceCameraPage extends Component {
       {
         Header: "Device Name",
         headerStyle: { fontWeight: "bold" },
-        accessor: "phoneno",
+        accessor: "deviceName",
+        style: { textAlign: "center" },
+      },
+      {
+        Header: "IP Address",
+        headerStyle: { fontWeight: "bold" },
+        accessor: "IpAddress",
         style: { textAlign: "center" },
       },
       {
         Header: "Url RTSP",
         headerStyle: { fontWeight: "bold" },
-        accessor: "name",
+        accessor: "urlRTSP",
         style: { textAlign: "center" },
       },
       {
@@ -63,7 +129,7 @@ class DeviceCameraPage extends Component {
                   textTransform: "capitalize",
                 }}
               >
-                {this.globallang.edit}
+                Edit
               </Typography>
             </Button>
             &nbsp;
@@ -84,7 +150,7 @@ class DeviceCameraPage extends Component {
                   textTransform: "capitalize",
                 }}
               >
-                {this.globallang.delete}
+                Delete
               </Typography>
             </Button>
           </div>
@@ -92,6 +158,116 @@ class DeviceCameraPage extends Component {
       },
     ];
   }
+
+  //=================================API Service==============================//
+
+  loadCamera = () => {
+    this.props.doLoading();
+    apiCameraList()
+      .then((response) => {
+        this.props.doLoading();
+        let dataresponse = response.data;
+        if (dataresponse.status === "OK") {
+          var temp = this.state.tableData;
+          temp = response.data.records;
+          for (var i = 0; i < temp.length; i++) {
+            temp[i].id = i + 1;
+          }
+          this.setState({ tableData: temp });
+        }
+      })
+      .catch((error) => {
+        this.props.doLoading();
+        console.log(error);
+      });
+  };
+
+  deleteDevice = (deviceId) => {
+    this.props.doLoading();
+    apiCameraDelete(deviceId)
+      .then((response) => {
+        this.props.doLoading();
+        let dataresponse = response.data;
+        if (dataresponse.status === "OK") {
+          this.setState({
+            openSuccess: true,
+            openSuccessText: "Data deleted successfully",
+          });
+        }
+      })
+      .catch((error) => {
+        this.props.doLoading();
+        console.log(error);
+      });
+  };
+
+  //=================================Function & Method========================//
+
+  componentDidMount = () => {
+    this.loadCamera();
+  };
+
+  doRowEdit = (row) => {
+    this.props.history.push("/panel/editDevice/" + row.deviceId);
+  };
+
+  doRowDelete = (row) => {
+    confirmAlert({
+      message: "Are you sure want to delete " + row.deviceName + "?",
+      buttons: [
+        {
+          label: "Yes",
+          onClick: (deviceId) => {
+            var deviceId = row.deviceId;
+            // console.log(deviceId);
+            this.deleteDevice(deviceId);
+          },
+        },
+        {
+          label: "No",
+        },
+      ],
+    });
+  };
+
+  addNew = () => {
+    this.props.history.push("/panel/addDevices");
+  };
+
+  reset = () => {
+    this.setState({ openSuccess: false, openSuccessText: "" });
+    this.loadCamera();
+  };
+
+  renderSuccess = () => {
+    if (this.state.openSuccess === true) {
+      setTimeout(() => this.reset(), 1000);
+
+      return (
+        <div style={{ margin: 10 }}>
+          <Stack sx={{ width: "100%" }} spacing={2}>
+            <Alert
+              variant="filled"
+              severity="success"
+              action={
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  size="small"
+                  // onClick={() => this.reset()}
+                >
+                  <Close fontSize="inherit" />
+                </IconButton>
+              }
+              sx={{ mb: 2 }}
+            >
+              {this.state.openSuccessText}
+            </Alert>
+          </Stack>
+        </div>
+      );
+    }
+  };
 
   render() {
     return (
@@ -121,9 +297,53 @@ class DeviceCameraPage extends Component {
                     })
                   }
                 >
-                  Add Devices
+                  Camera
                 </Typography>
-
+                <br></br>
+                <div className="contentDate">
+                  <div style={{ marginRight: 16 }}>
+                    <Button
+                      variant="contained"
+                      style={{
+                        backgroundColor: "#1273DE",
+                      }}
+                      startIcon={<Refresh />}
+                      onClick={() => this.reset()}
+                    >
+                      <Typography
+                        variant="button"
+                        style={{
+                          fontSize: 14,
+                          color: "#fff",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        Reset
+                      </Typography>
+                    </Button>
+                  </div>
+                  <div style={{ marginRight: 0 }}>
+                    <Button
+                      variant="contained"
+                      style={{
+                        backgroundColor: "#008b02",
+                      }}
+                      startIcon={<AddBox />}
+                      onClick={() => this.addNew()}
+                    >
+                      <Typography
+                        variant="button"
+                        style={{
+                          fontSize: 14,
+                          color: "#fff",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        Add New
+                      </Typography>
+                    </Button>
+                  </div>
+                </div>
                 <br></br>
               </Paper>
             </Grid>
@@ -131,17 +351,21 @@ class DeviceCameraPage extends Component {
         </Box>
         <br></br>
         <div className="box-container">
-          <Iframe
-            url={"http://192.168.0.107:8080/"}
-            width="100%"
-            height="600px"
-            id="myId"
-            className="myClassname"
-            display="initial"
-            position="relative"
-            // onLoad={this.hideLoading}
+          <ReactTable
+            ref={(r) => (this.reactTable = r)}
+            data={this.state.tableData}
+            columns={this.tableColumns}
+            style={{ backgroundColor: "#f2f2f2" }}
+            filterable
+            defaultFilterMethod={(filter, row) =>
+              String(row[filter.id])
+                .toLowerCase()
+                .includes(filter.value.toLowerCase())
+            }
+            defaultPageSize={5}
           />
         </div>
+        {this.renderSuccess()}
       </Box>
     );
   }

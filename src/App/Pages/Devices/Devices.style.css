@@ -1,0 +1,11 @@
+.default-video {
+    /* background-color: #aaa; */
+    width: 100%;
+    background-image: url("http://smart-community.csolusi.com/SmartSurveillanceSystem/Untitled-1-03.jpg");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    /* padding: 20px; */
+    /* background-color: #000000;
+    width: 100%;
+    opacity: 0.8; */
+  }
