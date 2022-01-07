@@ -166,7 +166,6 @@ class EditAdmin extends Component {
 
   componentDidMount = (dataShow) => {
     this.selectRole(dataShow);
-    // this.getrMerchant();
     this.props.doLoading();
     axios
       .post(

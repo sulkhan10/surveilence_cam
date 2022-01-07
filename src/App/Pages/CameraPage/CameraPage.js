@@ -139,6 +139,25 @@ class CameraPage extends Component {
           // onLoad={this.hideLoading}
         />
         {/* </div> */}
+        {/* <div className="box-container"> */}
+        {/* <Box sx={{ flexGrow: 1 }}>
+          <Grid container spacing={{ xs: 2 }} columns={{ xs: 4 }}>
+            {this.state.arrayData.map((obj, index) => (
+              <Grid item xs={4} key={index}>
+                <Paper>
+                  <div
+                    className="default-video"
+                    style={{ height: "420px", marginBottom: "20px" }}
+                  >
+                  </div>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+        <br></br> */}
+
+        {/* </div> */}
       </Box>
     );
   }

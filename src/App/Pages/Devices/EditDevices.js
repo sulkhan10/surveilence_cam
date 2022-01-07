@@ -27,6 +27,7 @@ import {
   Stack,
   Alert,
   IconButton,
+  Paper,
 } from "@mui/material";
 
 const stylesListDialog = {
@@ -693,15 +694,20 @@ class EditDevicesPage extends Component {
                 </Grid>
               </Grid>
               <Grid item xs={6}>
-                <div
-                  className="default-video"
-                  style={{ height: "420px", marginBottom: "20px" }}
+                <Paper
+                  style={{
+                    padding: "10px",
+                    marginBottom: "20px",
+                    backgroundColor: "#d5d5d5",
+                  }}
                 >
-                  <div
-                    id="video-canvas"
-                    style={{ height: "100%", width: "100%" }}
-                  ></div>
-                </div>
+                  <div className="default-video" style={{ height: "420px" }}>
+                    <div
+                      id="video-canvas"
+                      style={{ height: "100%", width: "100%" }}
+                    ></div>
+                  </div>
+                </Paper>
                 <Grid container spacing={2}>
                   <Grid item xs={9}>
                     <Input

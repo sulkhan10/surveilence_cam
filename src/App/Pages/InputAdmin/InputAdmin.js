@@ -135,7 +135,6 @@ class InputAdmin extends Component {
   componentDidMount = (dataShow) => {
     this.selectRole(dataShow);
     this.getListCommunity();
-    this.getrMerchant();
   };
 
   changeSelectMultiColumn = (logintypeid) => {

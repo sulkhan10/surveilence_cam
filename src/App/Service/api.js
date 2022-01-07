@@ -80,3 +80,35 @@ export function apiCameraSelect() {
     throw error;
   }
 }
+
+export function apiGroupList() {
+  try {
+    const response = axios({
+      method: "post",
+      url: webserviceurl + "/groupList.php",
+      data: {},
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export function apiViewList() {
+  try {
+    const response = axios({
+      method: "post",
+      url: webserviceurl + "/viewList.php",
+      data: {},
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
