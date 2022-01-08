@@ -128,7 +128,7 @@ class LiveViewPage extends Component {
   };
 
   componentWillUnmount = () => {
-    this.sendRequest("disconnected", {
+    this.sendRequest("disconnectedLive", {
       status: "diconnected",
     });
   };
@@ -182,7 +182,7 @@ class LiveViewPage extends Component {
   };
 
   handleChangeOptionGroup = (selectOptionGroup) => {
-    this.sendRequest("disconnected", {
+    this.sendRequest("disconnectedLive", {
       status: "diconnected",
     });
     console.log(selectOptionGroup);
@@ -197,7 +197,7 @@ class LiveViewPage extends Component {
   };
 
   doViewAll = () => {
-    this.sendRequest("disconnected", {
+    this.sendRequest("disconnectedLive", {
       status: "diconnected",
     });
     this.setState({

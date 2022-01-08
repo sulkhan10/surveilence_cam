@@ -3,6 +3,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
 import { Box, Paper, Grid, Typography } from "@mui/material";
+import ReactPlayer from "react-player";
 
 const stylesListComent = {
   inline: {
@@ -98,7 +99,7 @@ class PlayBackPage extends Component {
                     height: "75vh",
                   }}
                 >
-                  asdad
+                  <ReactPlayer url="https://www.youtube.com/watch?v=XZgiNnGB8m4" />
                 </Paper>
               </Grid>
             </Grid>
