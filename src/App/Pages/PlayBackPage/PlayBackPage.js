@@ -99,7 +99,7 @@ class PlayBackPage extends Component {
                     height: "75vh",
                   }}
                 >
-                  <ReactPlayer url="https://www.youtube.com/watch?v=XZgiNnGB8m4" />
+                  {/* <ReactPlayer url="https://www.youtube.com/watch?v=XZgiNnGB8m4" /> */}
                 </Paper>
               </Grid>
             </Grid>
