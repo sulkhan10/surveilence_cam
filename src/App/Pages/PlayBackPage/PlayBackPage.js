@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
 import { Box, Paper, Grid, Typography } from "@mui/material";
 import ReactPlayer from "react-player";
+import "./PlayBackPage.style.css";
 
 const stylesListComent = {
   inline: {
@@ -99,7 +100,15 @@ class PlayBackPage extends Component {
                     height: "75vh",
                   }}
                 >
-                  {/* <ReactPlayer url="https://www.youtube.com/watch?v=XZgiNnGB8m4" /> */}
+                  <div className="player-wrapper">
+                    <ReactPlayer
+                      className="react-player"
+                      url="https://www.youtube.com/watch?v=ysz5S6PUM-U"
+                      width="100%"
+                      height="100%"
+                      controls={true}
+                    />
+                  </div>
                 </Paper>
               </Grid>
             </Grid>
