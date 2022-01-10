@@ -279,6 +279,7 @@ class LiveViewPage extends Component {
                       marginLeft: "10px",
                       marginRight: "10px",
                       marginTop: "-35px",
+                      zIndex: 1,
                     }}
                   >
                     <Typography

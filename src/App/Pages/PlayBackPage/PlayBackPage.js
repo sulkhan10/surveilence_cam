@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { apiGroupList, apiViewList } from "../../Service/api";
+import DatePicker from "react-datepicker";
+import moment from "moment";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
@@ -12,6 +14,7 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
+  Divider,
 } from "@mui/material";
 import { Videocam } from "@mui/icons-material";
 import ReactPlayer from "react-player";
@@ -44,6 +47,9 @@ class PlayBackPage extends Component {
       selectOptionGroup: null,
       optionsDataGroup: [],
       listViewCamera: [],
+      selectedCamera: 0,
+      startDate: moment(),
+      endDate: moment(),
     };
   }
 
@@ -100,19 +106,58 @@ class PlayBackPage extends Component {
     });
   };
 
+  selectedCamera = (value) => {
+    this.setState({
+      selectedCamera: value,
+    });
+  };
+
+  setStartDate = (date) => {
+    this.setState({ startDate: date });
+  };
+
   renderCannelCamera = () => {
     if (this.state.listViewCamera.length > 0) {
       return (
         <>
           {this.state.listViewCamera.map((obj, i) => {
-            return (
-              <ListItem button>
-                <ListItemIcon>
-                  <Videocam />
-                </ListItemIcon>
-                <ListItemText primary={obj.deviceName} />
-              </ListItem>
-            );
+            if (this.state.selectedCamera === obj.deviceId) {
+              return (
+                <>
+                  <ListItem
+                    button
+                    style={{
+                      backgroundColor: "#036b50",
+                    }}
+                    onClick={() => this.selectedCamera(obj.deviceId)}
+                  >
+                    <ListItemIcon>
+                      <Videocam style={{ color: "#fff" }} />
+                    </ListItemIcon>
+                    <ListItemText
+                      style={{ color: "#fff" }}
+                      primary={obj.deviceName}
+                    />
+                  </ListItem>
+                  <Divider />
+                </>
+              );
+            } else {
+              return (
+                <>
+                  <ListItem
+                    button
+                    onClick={() => this.selectedCamera(obj.deviceId)}
+                  >
+                    <ListItemIcon>
+                      <Videocam />
+                    </ListItemIcon>
+                    <ListItemText primary={obj.deviceName} />
+                  </ListItem>
+                  <Divider />
+                </>
+              );
+            }
           })}
         </>
       );
@@ -209,6 +254,20 @@ class PlayBackPage extends Component {
                       Date
                     </Typography>
                     <span className="dash">&nbsp;&nbsp;</span>
+                  </div>
+                  <div
+                    style={{
+                      textAlign: "center",
+                    }}
+                  >
+                    <DatePicker
+                      dateFormat="yyyy-mm-dd"
+                      selected={this.state.startDate}
+                      onChange={(date) => this.setStartDate(date)}
+                      startDate={this.state.startDate}
+                      className="responsive-calendar"
+                      inline
+                    />
                   </div>
                 </Paper>
               </Grid>

@@ -15,4 +15,45 @@
     margin: 0 auto;
     position: relative;
     background-color: white;
+    max-height: 160px;
+    height: 160px;
+  }
+
+  .date-react {
+    height: auto;
+    display: inherit;
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    color: #495057;
+  }
+
+  .responsive-calendar {
+    /* by setting font-size, all the elements will correspond */
+    font-size: 9px !important; /* default to 10px */
+  }
+  
+  @media (max-width: 1500px) {
+    .responsive-calendar {
+      font-size: 8px !important;
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    .responsive-calendar {
+      font-size: 7px !important;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .responsive-calendar {
+      font-size: 6px !important;
+    }
+  }
+  
+  /* Large screens */
+  @media (min-width: 2500px) {
+    .responsive-calendar {
+      font-size: 12px !important;
+    }
   }
