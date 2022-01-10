@@ -81,10 +81,10 @@ class LiveViewPage extends Component {
   };
 
   getViewList = () => {
-    this.props.doLoading();
+    // this.props.doLoading();
     apiViewList()
       .then((response) => {
-        this.props.doLoading();
+        // this.props.doLoading();
         let dataresponse = response.data;
         if (dataresponse.status === "OK") {
           if (dataresponse.records.length > 0) {
@@ -99,7 +99,7 @@ class LiveViewPage extends Component {
         }
       })
       .catch((error) => {
-        this.props.doLoading();
+        // this.props.doLoading();
         console.log(error);
       });
   };

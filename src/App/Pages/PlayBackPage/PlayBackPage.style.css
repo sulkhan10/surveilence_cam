@@ -8,3 +8,11 @@
     top: 0;
     left: 0;
   }
+
+
+  .list-camera-channel {
+    overflow-y: auto;
+    margin: 0 auto;
+    position: relative;
+    background-color: white;
+  }

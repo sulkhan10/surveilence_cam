@@ -1,15 +1,34 @@
 import React, { Component } from "react";
+import { apiGroupList, apiViewList } from "../../Service/api";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
-import { Box, Paper, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Grid,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+} from "@mui/material";
+import { Videocam } from "@mui/icons-material";
 import ReactPlayer from "react-player";
 import "./PlayBackPage.style.css";
+import Select from "react-select";
 
 const stylesListComent = {
   inline: {
     display: "inline",
   },
+};
+
+const customStyles = {
+  option: (provided, state) => ({
+    ...provided,
+    color: state.isSelected ? "#fff" : "#000",
+  }),
 };
 
 class PlayBackPage extends Component {
@@ -20,10 +39,85 @@ class PlayBackPage extends Component {
       groupShow: [],
       cameraShow: [],
       cameraId: "",
+      urlVideo:
+        "http://smart-community.csolusi.com/SmartSurveillanceSystem/Untitled-1-03.jpg",
+      selectOptionGroup: null,
+      optionsDataGroup: [],
+      listViewCamera: [],
     };
   }
 
-  componentDidMount = () => {};
+  //=========================API Service=====================//
+  getGroupList = () => {
+    apiGroupList()
+      .then((response) => {
+        let dataresponse = response.data;
+        if (dataresponse.status === "OK") {
+          if (dataresponse.records.length > 0) {
+            this.setState({
+              optionsDataGroup: dataresponse.records,
+            });
+          }
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  getViewList = () => {
+    // this.props.doLoading();
+    apiViewList()
+      .then((response) => {
+        // this.props.doLoading();
+        let dataresponse = response.data;
+        if (dataresponse.status === "OK") {
+          if (dataresponse.records.length > 0) {
+            this.setState({
+              viewListData: dataresponse.records,
+              listViewCamera: dataresponse.records,
+            });
+          }
+        }
+      })
+      .catch((error) => {
+        // this.props.doLoading();
+        console.log(error);
+      });
+  };
+  //=========================Function & Method===============//
+
+  componentDidMount = () => {
+    this.getGroupList();
+    this.getViewList();
+  };
+
+  handleChangeOptionGroup = (selectOptionGroup) => {
+    console.log(selectOptionGroup);
+    this.setState({ selectOptionGroup });
+    this.setState({
+      listViewCamera: selectOptionGroup.info,
+    });
+  };
+
+  renderCannelCamera = () => {
+    if (this.state.listViewCamera.length > 0) {
+      return (
+        <>
+          {this.state.listViewCamera.map((obj, i) => {
+            return (
+              <ListItem button>
+                <ListItemIcon>
+                  <Videocam />
+                </ListItemIcon>
+                <ListItemText primary={obj.deviceName} />
+              </ListItem>
+            );
+          })}
+        </>
+      );
+    }
+  };
 
   render() {
     return (
@@ -71,6 +165,16 @@ class PlayBackPage extends Component {
                     height: "75vh",
                   }}
                 >
+                  <div style={{ width: "100%", marginBottom: "10px" }}>
+                    <Select
+                      styles={customStyles}
+                      classNamePrefix="select"
+                      placeholder="-Select Group-"
+                      value={this.state.selectOptionGroup}
+                      onChange={this.handleChangeOptionGroup}
+                      options={this.state.optionsDataGroup}
+                    />
+                  </div>
                   <div className="page-header">
                     <Typography
                       component="span"
@@ -85,7 +189,25 @@ class PlayBackPage extends Component {
                     >
                       Camera Channel
                     </Typography>
-
+                    <span className="dash">&nbsp;&nbsp;</span>
+                  </div>
+                  <List className="list-camera-channel">
+                    {this.renderCannelCamera()}
+                  </List>
+                  <div className="page-header">
+                    <Typography
+                      component="span"
+                      variant="h2"
+                      style={{
+                        fontSize: 16,
+                        color: "#006432",
+                        fontWeight: "bold",
+                        textTransform: "capitalize",
+                        float: "left",
+                      }}
+                    >
+                      Date
+                    </Typography>
                     <span className="dash">&nbsp;&nbsp;</span>
                   </div>
                 </Paper>
@@ -103,7 +225,7 @@ class PlayBackPage extends Component {
                   <div className="player-wrapper">
                     <ReactPlayer
                       className="react-player"
-                      url="https://www.youtube.com/watch?v=ysz5S6PUM-U"
+                      url={this.state.urlVideo}
                       width="100%"
                       height="100%"
                       controls={true}
