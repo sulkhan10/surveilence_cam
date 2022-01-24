@@ -11,7 +11,10 @@
     "axios": "^0.24.0",
     "express": "^4.17.2",
     "http": "0.0.1-security",
+    "node-rtsp-recorder": "^1.0.3",
     "node-rtsp-stream": "^0.0.9",
+    "rtsp-downloader": "^1.0.2",
+    "rtsp-video-recorder": "^2.0.2-beta.1",
     "websocket": "^1.0.34"
   },
   "devDependencies": {

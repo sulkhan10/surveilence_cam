@@ -34,11 +34,15 @@ const customStyles = {
   option: (provided, state) => ({
     ...provided,
     color: state.isSelected ? "#fff" : "#000",
+    zIndex: 1,
   }),
+  menu: (provided) => ({ ...provided, zIndex: 9999 }),
 };
 
 var cameraplayer = null;
-const client = new W3CWebSocket("ws://127.0.0.1:8000");
+// const client = new W3CWebSocket("ws://127.0.0.1:8000");
+// const client = new W3CWebSocket("ws://192.168.0.107:8000");
+const client = new W3CWebSocket("ws://192.168.0.250:8000");
 
 class LiveViewPage extends Component {
   constructor(props) {
@@ -46,7 +50,9 @@ class LiveViewPage extends Component {
     this.state = {
       groupId: "",
       groupShow: [],
-      ffmpegIP: "localhost",
+      // ffmpegIP: "localhost",
+      // ffmpegIP: "192.168.0.107",
+      ffmpegIP: "192.168.0.250",
       arrayData: [
         { data: "Camera 1" },
         { data: "Camera 2" },
@@ -128,6 +134,7 @@ class LiveViewPage extends Component {
   };
 
   componentWillUnmount = () => {
+    cameraplayer.destroy();
     this.sendRequest("disconnectedLive", {
       status: "diconnected",
     });
@@ -314,7 +321,7 @@ class LiveViewPage extends Component {
                     <div
                       id={"video-canvas" + index}
                       style={{ height: "100%", width: "100%" }}
-                    />
+                    ></div>
                   </div>
                   <div
                     style={{
@@ -322,6 +329,7 @@ class LiveViewPage extends Component {
                       marginLeft: "10px",
                       marginRight: "10px",
                       marginTop: "-35px",
+                      zIndex: 1,
                     }}
                   >
                     <Typography
@@ -508,6 +516,10 @@ class LiveViewPage extends Component {
                   <div style={{ marginRight: 16, width: 250 }}>
                     <Select
                       styles={customStyles}
+                      // styles={{
+                      //   // Fixes the overlapping problem of the component
+                      //   menu: (provided) => ({ ...provided, zIndex: 9999 }),
+                      // }}
                       classNamePrefix="select"
                       placeholder="Select For..."
                       value={this.state.selectOptionGroup}

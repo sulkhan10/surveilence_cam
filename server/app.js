@@ -1,12 +1,19 @@
+const { join } = require("path");
+const Recorder = require("node-rtsp-recorder").Recorder;
+const FileHandler = require("rtsp-downloader").FileHandler;
+const fs = require("fs");
+const fh = new FileHandler();
+Stream = require("node-rtsp-stream");
 const webSocketsServerPort = 8000;
 const webSocketServer = require("websocket").server;
 const http = require("http");
 const server = http.createServer();
 server.listen(webSocketsServerPort);
+console.log("Listening on port " + webSocketsServerPort);
 const wsServer = new webSocketServer({
   httpServer: server,
 });
-Stream = require("node-rtsp-stream");
+
 var stream = null;
 var StremDataLiveView = null;
 
@@ -52,6 +59,7 @@ wsServer.on("request", function (request) {
       startDiscovery(conn);
     } else if (method === "connect") {
       StreamCamera(conn, params);
+      // StartRecorder(conn, params);
     } else if (method === "disconnected") {
       StopCamera(conn, params);
     } else if (method === "startLiveView") {
@@ -104,6 +112,25 @@ function StreamCamera(conn, params) {
     wsPort: wsPortCamera,
   };
   conn.send(JSON.stringify(res));
+}
+
+function StartRecorder(conn, params) {
+  var rec = new Recorder({
+    url: params.url_rtsp,
+    timeLimit: 60 * 15, // 15 minutes
+    folderSizeLimit: 5,
+    folder: join(__dirname, "/videos/"),
+    name: "defaultCamera",
+    directoryPathFormat: "YYYY-MM-DD",
+    fileNameFormat: "YYYY-M-D-h-mm-ss",
+  });
+
+  rec.startRecording();
+  setTimeout(() => {
+    console.log("Stopping Recording");
+    rec.stopRecording();
+    rec = null;
+  }, 30000);
 }
 
 function StopCamera(conn, params) {
@@ -163,10 +190,41 @@ function startLiveCamera(conn, params) {
     let res = {
       id: "streamCameraList",
       result: dataParam,
+      dataStream: StremDataLiveView,
     };
     conn.send(JSON.stringify(res));
   }
 }
+
+// (function () {
+//   var rec = new Recorder({
+//     url: "rtsp://admin:admin@192.168.0.102:554/11",
+//     timeLimit: 60 * 15, // 15 minutes
+//     folderSizeLimit: 5,
+//     folder: join(__dirname, "/videos/"),
+//     name: "cam1",
+//     directoryPathFormat: "MMM-Do-YY",
+//     fileNameFormat: "YYYY-M-D-h-mm-ss",
+//   });
+
+//   var rec2 = new Recorder({
+//     url: "rtsp://admin:admin@192.168.0.102:554/11",
+//     folder: join(__dirname, "/imgs/"),
+//     name: "cam1",
+//     type: "image",
+//   });
+
+//   rec.startRecording();
+//   setTimeout(() => {
+//     console.log("Stopping Recording");
+//     rec.stopRecording();
+//     rec = null;
+//   }, 30000);
+
+//   rec2.captureImage(() => {
+//     console.log("Image Captured");
+//   });
+// })();
 
 // stream = new Stream({
 //   name: "Bunny",

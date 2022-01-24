@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <script src='./js/jquery1-11-3-min.js'></script>
+        <script>
+            $(document).ready(function (){
+                buildwebsocket();
+            });
+            var ws;
+            function buildwebsocket(){
+                ws = new WebSocket("ws://192.168.0.96:5050",'echo-protocol');
+                ws.onopen = function(evt) { onOpen(evt) };
+                ws.onclose = function(evt) { onClose(evt) };
+                ws.onmessage = function(evt) { onMessage(evt) };
+                ws.onerror = function(evt) { onError(evt) };
+            }
+            function onOpen(ev){
+                //alert("konek men! mantap! :D");
+                $("#recmsg").append("connected!<br>");
+            }
+            function onClose(ev){
+                $("#recmsg").append("connection closed!<br>");
+            }
+            function onMessage(ev){
+                //alert("ada pesan datang!");
+                $("#recmsg").append(ev.data+"<br>");
+            }
+            function onError(ev){
+                $("#recmsg").append("connecting error!<br>");
+            }
+            function doSend(){
+                //writeToScreen("SENT: " + message); 
+                var message = $("#pesan").val();
+                ws.send(message);
+            } function doClose(){
+                ws.close();
+            }
+            //function writeToScreen(message){
+                //var pre = document.createElement("p");
+                //pre.style.wordWrap = "break-word";
+                //pre.innerHTML = message;
+                //output.appendChild(pre);
+            //}
+            //window.addEventListener("load", init, false);
+        </script>
+    </head>
+    <body>
+        <button onclick='doClose()'>Close</button>
+        <textarea id='pesan'></textarea><br>
+        <button onclick='doSend()'>Kirim!</button>
+        <br>
+        received message
+        <div id='recmsg'>
+        </div>  
+    </body>
+</html>

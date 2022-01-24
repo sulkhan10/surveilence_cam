@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 //import { Link, Redirect } from 'react-router-dom';
+import { w3cwebsocket as W3CWebSocket } from "websocket";
 import axios from "axios";
 import { serverUrl } from "../../../config.js";
 import "./Login.style.css";
@@ -12,6 +13,8 @@ const stylesListComent = {
   },
 };
 
+var player = null;
+const client = new W3CWebSocket("ws://192.168.0.250:8000");
 class Login extends Component {
   constructor(props) {
     super(props);
@@ -29,6 +32,13 @@ class Login extends Component {
     //this.props.history.index=0;
     //this.props.history.length=1;
   }
+
+  componentDidMount = () => {
+    client.onopen = () => {
+      console.log("WebSocket Client Connected");
+      this.sendRequest("startDiscovery");
+    };
+  };
 
   doLogin = () => {
     //this.props.history.replace({pathname:'/panel/dashboard', state:{loginInfo: { name: 'rusman', profilepic:""}}});

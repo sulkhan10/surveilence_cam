@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { apiGroupList, apiViewList } from "../../Service/api";
-import DatePicker from "react-datepicker";
+import { Input } from "reactstrap";
 import moment from "moment";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -15,8 +15,9 @@ import {
   ListItemText,
   ListItemIcon,
   Divider,
+  Button,
 } from "@mui/material";
-import { Videocam } from "@mui/icons-material";
+import { Videocam, CameraRoll } from "@mui/icons-material";
 import ReactPlayer from "react-player";
 import "./PlayBackPage.style.css";
 import Select from "react-select";
@@ -48,8 +49,7 @@ class PlayBackPage extends Component {
       optionsDataGroup: [],
       listViewCamera: [],
       selectedCamera: 0,
-      startDate: moment(),
-      endDate: moment(),
+      startDate: new Date(),
     };
   }
 
@@ -103,6 +103,7 @@ class PlayBackPage extends Component {
     this.setState({ selectOptionGroup });
     this.setState({
       listViewCamera: selectOptionGroup.info,
+      selectedCamera: 0,
     });
   };
 
@@ -112,8 +113,9 @@ class PlayBackPage extends Component {
     });
   };
 
-  setStartDate = (date) => {
-    this.setState({ startDate: date });
+  ChangeDate = (event) => {
+    console.log(event.target.value);
+    this.setState({ startDate: event.target.value });
   };
 
   renderCannelCamera = () => {
@@ -257,17 +259,45 @@ class PlayBackPage extends Component {
                   </div>
                   <div
                     style={{
-                      textAlign: "center",
+                      textAlign: "left",
                     }}
                   >
-                    <DatePicker
-                      dateFormat="yyyy-mm-dd"
-                      selected={this.state.startDate}
-                      onChange={(date) => this.setStartDate(date)}
-                      startDate={this.state.startDate}
-                      className="responsive-calendar"
-                      inline
-                    />
+                    <Grid container spacing={2}>
+                      <Grid item xs={8}>
+                        <Input
+                          autoComplete="off"
+                          type="date"
+                          name="date"
+                          id="exampleDate"
+                          value={this.state.startDate}
+                          onChange={this.ChangeDate}
+                          placeholder="Expired Date"
+                        />
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Button
+                          variant="contained"
+                          size="medium"
+                          style={{
+                            backgroundColor: "#388e3c",
+                          }}
+                          startIcon={<CameraRoll />}
+                          // onClick={() => this.pressedConnectButton()}
+                        >
+                          <Typography
+                            variant="button"
+                            style={{
+                              fontSize: 11,
+                              color: "#fff",
+                              textTransform: "capitalize",
+                              marginLeft: -5,
+                            }}
+                          >
+                            Get Video
+                          </Typography>
+                        </Button>{" "}
+                      </Grid>
+                    </Grid>
                   </div>
                 </Paper>
               </Grid>
