@@ -1,0 +1,1 @@
+ffmpeg -v info -i rtsp://admin:admin@192.168.0.102:554/11 -fflags flush_packets -max_delay 5 -flags -global_header -hls_time 5 -hls_list_size 3 -vcodec copy -y ./videos/camera/ipcamera.m3u8

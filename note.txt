@@ -1,0 +1,91 @@
+ffmpeg -v info -i rtsp://SIMCAM:RJCFCV@192.168.0.100/live -fflags flush_packets -max_delay 5 -flags -global_header -hls_time 5 -hls_list_size 3 -vcodec copy -y .\videos\camera\simcam.m3u8
+
+ffmpeg -v info -i rtsp://admin:admin@192.168.0.102:554/11 -c:v copy -c:a copy -bufsize 1835k -pix_fmt yuv420p -flags -global_header -hls_time 10 -hls_list_size 6 -hls_wrap 10 -vcodec copy -y .\videos\camera\ipcamera.m3u8
+
+ffmpeg -v info -i rtsp://admin:admin@192.168.0.102:554/11 -fflags flush_packets -max_delay 5 -flags -global_header -hls_time 5 -hls_list_size 3 -vcodec copy -y .\videos\camera\ipcamera.m3u8
+
+
+ffmpeg -v info -i rtsp://admin:admin@192.168.0.102:554/11 -fflags flush_packets -max_delay 5 -flags -global_header -hls_time 5 -hls_list_size 3 -vcodec copy -y ./videos/camera/ipcamera.m3u8
+
+ffmpeg -v info -i rtsp://SIMCAM:DX8PHX@192.168.0.200/live -fflags flush_packets -max_delay 5 -flags -global_header -hls_time 5 -hls_list_size 3 -vcodec copy -y ./videos/camera/192.168.0.200.m3u8
+
+ffmpeg -v info -i rtsp://192.168.0.149:554/11 -fflags flush_packets -max_delay 5 -flags -global_header -hls_time 5 -hls_list_size 3 -vcodec copy -y ./videos/camera/192.168.0.149.m3u8
+
+rtsp://192.168.0.149:554/11
+
+
+ -i rtsp://url1 -i rtsp://url2
+ -map 0 
+ -fflags flush_packets 
+ -max_delay 2 
+ -flags 
+ -global_header 
+ -hls_time 2 
+ -hls_list_size 3 
+ -hls_segment_filename m1/video%03d.ts 
+ -hls_flags delete_segments 
+ -vcodec copy -y m1/video1.m3u8
+ -map 1 
+ -fflags flush_packets 
+ -max_delay 2 
+ -flags 
+ -global_header 
+ -hls_time 2 
+ -hls_list_size 3 
+ -hls_segment_filename m2/video%03d.ts 
+ -hls_flags delete_segments -vcodec copy -y m2/video1.m3u8
+
+
+ffmpeg 
+-rtsp_transport tcp 
+-i rtsp://admin:admin@192.168.0.102:554/11 
+-acodec copy 
+-vcodec 
+copy E:\WorkSheet\SIMCAM\simcam-v1\videos\cam1\Jan-26th-22\video\2022-1-26-4-13-22.mp4
+
+ ffmpeg 
+ -i rtsp://admin:admin@10.0.0.102:554/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream 
+ -rtsp_transport tcp 
+ -r 5 
+ -t 20 
+ -y 
+ -vf scale=800:-1 
+ -c:v 
+ libx264 
+ -crf 35 
+ -preset 
+ veryfast 
+ -c:a aac 
+ -strict experimental 
+ -b:a 192k 
+ -ac 2 
+ output.mp4
+
+
+rtsp://admin:admin@192.168.0.102:554/11
+rtsp://SIMCAM:RJCFCV@192.168.0.104/live
+
+
+ffmpeg -i rtsp://xxx:xxx@192.168.1.57:554/h264Preview_01_main -r 10 -t 60 -vcodec copy -acodec copy -y
+
+
+
+ffmpeg -rtsp_transport tcp -i rtsp://admin:admin@192.168.0.102:554/11 -f segment -strftime 1 -segment_atclocktime 1 -segment_clocktime_offset 30 -segment_format mp4 -an -vcodec copy -reset_timestamps 1  record_%Y-%m-%d-%H.%M.%S.mp4
+
+ffmpeg -i rtsp://admin:admin@192.168.0.102:554/11  -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 "%Y%m%d-%H%M.mp4"
+
+ffmpeg -i rtsp://admin:admin@192.168.0.102:554/11 -acodec copy -vcodec copy c:./videos/record/tesre.mp4
+
+ffmpeg -i rtsp://admin:admin@192.168.0.102:554/11 -b 900k -vcodec copy -r 60 -y MyVdeoFFmpeg.avi
+
+ffmpeg -i rtsp://admin:admin@192.168.0.102:554/11 -c copy -map 0 -f segment -segment_time 600 -segment_format mp4 -y out%03d.mp4
+
+ffmpeg -i "%%f" -c:v h264 -crf 17 "g:\%%d\%%~nf".mp4
+
+ffmpeg -i  rtsp://admin:admin@192.168.0.102:554/11 -c copy -flags +global_header -f segment -segment_time 60 -segment_format_options movflags=+faststart -reset_timestamps 1 -vcodec copy  test%d.mp4
+
+ ffmpeg -i rtsp://admin:admin@192.168.0.102:554/11 -c copy -map 0 -f segment -segment_time 600 -segment_format mp4 "out%03d.mp4"
+
+ ffmpeg -i rtsp://admin:admin@192.168.0.102:554/11 -vcodec copy -f mp4 -y MyVideoFFmpeg.mp4
+
+ ffmpeg -i rtsp://admin:admin@192.168.0.149:554/11 -vcodec copy -f mp4 -y MyVideoFFmpeg.mp4

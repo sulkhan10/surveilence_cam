@@ -1,13 +1,48 @@
 const { join } = require("path");
+const findRemoveSync = require("find-remove");
 const Recorder = require("node-rtsp-recorder").Recorder;
 const FileHandler = require("rtsp-downloader").FileHandler;
+const http = require("http");
 const fs = require("fs");
 const fh = new FileHandler();
 Stream = require("node-rtsp-stream");
-const webSocketsServerPort = 8000;
+const webSocketsServerPort = 4000;
 const webSocketServer = require("websocket").server;
 const http = require("http");
-const server = http.createServer();
+const server = http.createServer(function (request, response) {
+  console.log("request starting...", new Date());
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
+    "Access-Control-Max-Age": 2592000, // 30 days
+    /** add other headers as per requirement */
+  };
+  if (request.method === "OPTIONS") {
+    respose.writeHead(204, headers);
+    response.end();
+    return;
+  }
+  var filePath = "./videos/camera" + request.url;
+  console.log(filePath);
+  fs.readFile(filePath, function (error, content) {
+    response.writeHead(200, { "Access-Control-Allow-Origin": "*" });
+    if (error) {
+      if (error.code == "ENOENT") {
+        fs.readFile("./404.html", function (error, content) {
+          response.end(content, "utf-8");
+        });
+      } else {
+        response.writeHead(500);
+        response.end(
+          "Sorry, check with the site admin for error: " + error.code + " ..\n"
+        );
+        response.end();
+      }
+    } else {
+      response.end(content, "utf-8");
+    }
+  });
+});
 server.listen(webSocketsServerPort);
 console.log("Listening on port " + webSocketsServerPort);
 const wsServer = new webSocketServer({
@@ -195,6 +230,14 @@ function startLiveCamera(conn, params) {
     conn.send(JSON.stringify(res));
   }
 }
+
+setInterval(() => {
+  var result = findRemoveSync("./videos/camera", {
+    age: { seconds: 30 },
+    extensions: ".ts",
+  });
+  console.log(result);
+}, 5000);
 
 // (function () {
 //   var rec = new Recorder({

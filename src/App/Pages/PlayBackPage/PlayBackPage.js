@@ -43,8 +43,7 @@ class PlayBackPage extends Component {
       groupShow: [],
       cameraShow: [],
       cameraId: "",
-      urlVideo:
-        "http://smart-community.csolusi.com/SmartSurveillanceSystem/Untitled-1-03.jpg",
+      urlVideo: "",
       selectOptionGroup: null,
       optionsDataGroup: [],
       listViewCamera: [],
@@ -311,7 +310,12 @@ class PlayBackPage extends Component {
                     height: "75vh",
                   }}
                 >
-                  <div className="player-wrapper">
+                  <div
+                    className="player-wrapper"
+                    style={{
+                      backgroundColor: "#000",
+                    }}
+                  >
                     <ReactPlayer
                       className="react-player"
                       url={this.state.urlVideo}

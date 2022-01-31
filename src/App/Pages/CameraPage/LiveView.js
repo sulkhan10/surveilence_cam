@@ -5,6 +5,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
 import "./CameraPage.style.css";
+import ReactPlayer from "react-player";
 import { apiGroupList, apiViewList } from "../../Service/api";
 import Select from "react-select";
 import Fullscreen from "react-fullscreen-crossbrowser";
@@ -22,6 +23,7 @@ import {
   Fullscreen as fullscreen,
   FullscreenRounded,
   ViewHeadlineOutlined,
+  Refresh,
 } from "@mui/icons-material";
 
 const stylesListComent = {
@@ -40,9 +42,9 @@ const customStyles = {
 };
 
 var cameraplayer = null;
-// const client = new W3CWebSocket("ws://127.0.0.1:8000");
+const client = new W3CWebSocket("ws://127.0.0.1:8000");
 // const client = new W3CWebSocket("ws://192.168.0.107:8000");
-const client = new W3CWebSocket("ws://192.168.0.250:8000");
+// const client = new W3CWebSocket("ws://192.168.0.250:8000");
 
 class LiveViewPage extends Component {
   constructor(props) {
@@ -52,7 +54,10 @@ class LiveViewPage extends Component {
       groupShow: [],
       // ffmpegIP: "localhost",
       // ffmpegIP: "192.168.0.107",
-      ffmpegIP: "192.168.0.250",
+      // ffmpegIP: "192.168.0.250",
+      baseUrl: "http://127.0.0.1:4000/",
+      // baseUrl: "http://192.168.0.250:4000/",
+      extenstion: "_.m3u8",
       arrayData: [
         { data: "Camera 1" },
         { data: "Camera 2" },
@@ -98,9 +103,9 @@ class LiveViewPage extends Component {
               viewListData: dataresponse.records,
               listViewCamera: dataresponse.records,
             });
-            this.sendRequest("startLiveView", {
-              listViewCameraData: dataresponse.records,
-            });
+            // this.sendRequest("startLiveView", {
+            //   listViewCameraData: dataresponse.records,
+            // });
           }
         }
       })
@@ -115,39 +120,39 @@ class LiveViewPage extends Component {
     this.getGroupList();
     this.getViewList();
 
-    client.onopen = () => {
-      console.log("WebSocket Client Connected");
-      this.sendRequest("startDiscovery");
-    };
-    client.onmessage = (message) => {
-      const dataFromServer = JSON.parse(message.data);
-      var id = dataFromServer.id;
-      console.log(dataFromServer);
-      if (id === "startDiscovery") {
-        console.log("data from server", dataFromServer);
-      } else if (id === "streamCameraList") {
-        this.streamCameraList(dataFromServer);
-      } else if (id === "stopJsmpeg") {
-        this.destroyCamera(dataFromServer);
-      }
-    };
+    // client.onopen = () => {
+    //   console.log("WebSocket Client Connected");
+    //   this.sendRequest("startDiscovery");
+    // };
+    // client.onmessage = (message) => {
+    //   const dataFromServer = JSON.parse(message.data);
+    //   var id = dataFromServer.id;
+    //   console.log(dataFromServer);
+    //   if (id === "startDiscovery") {
+    //     console.log("data from server", dataFromServer);
+    //   } else if (id === "streamCameraList") {
+    //     this.streamCameraList(dataFromServer);
+    //   } else if (id === "stopJsmpeg") {
+    //     this.destroyCamera(dataFromServer);
+    //   }
+    // };
   };
 
   componentWillUnmount = () => {
-    cameraplayer.destroy();
-    this.sendRequest("disconnectedLive", {
-      status: "diconnected",
-    });
+    // cameraplayer.destroy();
+    // this.sendRequest("disconnectedLive", {
+    //   status: "diconnected",
+    // });
   };
 
-  sendRequest = (method, params) => {
-    client.send(
-      JSON.stringify({
-        method: method,
-        params: params,
-      })
-    );
-  };
+  // sendRequest = (method, params) => {
+  //   client.send(
+  //     JSON.stringify({
+  //       method: method,
+  //       params: params,
+  //     })
+  //   );
+  // };
 
   streamCameraList = (data) => {
     console.log("stream camera list", data);
@@ -189,31 +194,41 @@ class LiveViewPage extends Component {
   };
 
   handleChangeOptionGroup = (selectOptionGroup) => {
-    this.sendRequest("disconnectedLive", {
-      status: "diconnected",
-    });
+    // this.sendRequest("disconnectedLive", {
+    //   status: "diconnected",
+    // });
     console.log(selectOptionGroup);
     this.setState({ selectOptionGroup });
     this.setState({
       listViewCamera: selectOptionGroup.info,
     });
 
-    this.sendRequest("startLiveView", {
-      listViewCameraData: selectOptionGroup.info,
+    // this.sendRequest("startLiveView", {
+    //   listViewCameraData: selectOptionGroup.info,
+    // });
+  };
+
+  reset = () => {
+    this.setState({
+      selectOptionGroup: null,
+      viewListData: [],
+      listViewCamera: [],
     });
+    this.getGroupList();
+    this.getViewList();
   };
 
   doViewAll = () => {
-    this.sendRequest("disconnectedLive", {
-      status: "diconnected",
-    });
+    // this.sendRequest("disconnectedLive", {
+    //   status: "diconnected",
+    // });
     this.setState({
       listViewCamera: this.state.viewListData,
       selectOptionGroup: null,
     });
-    this.sendRequest("startLiveView", {
-      listViewCameraData: this.state.viewListData,
-    });
+    // this.sendRequest("startLiveView", {
+    //   listViewCameraData: this.state.viewListData,
+    // });
   };
 
   renderView = () => {
@@ -266,47 +281,119 @@ class LiveViewPage extends Component {
     cameraplayer.stop();
   };
 
+  ref = (player) => {
+    this.player = player;
+    console.log(player);
+  };
+
+  renderStream1 = (obj, index) => {
+    var urlStream = this.state.baseUrl + obj.IpAddress + this.state.extenstion;
+    return (
+      <Grid item xs={2} key={index}>
+        <Paper style={{ padding: "10px", backgroundColor: "#000" }}>
+          <div className="player-wrapper">
+            <ReactPlayer
+              ref={this.ref}
+              className="react-player"
+              key={urlStream}
+              url={urlStream}
+              width="100%"
+              height="100%"
+              playing={true}
+              playsinline={true}
+              controls={true}
+              config={{
+                file: {
+                  attributes: {
+                    preload: "auto",
+                  },
+                },
+              }}
+            />
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              marginLeft: "10px",
+              marginRight: "10px",
+              marginTop: "-20px",
+              zIndex: 1,
+            }}
+          >
+            <Typography
+              component="span"
+              variant="h1"
+              style={
+                (stylesListComent.inline,
+                {
+                  fontSize: 14,
+                  color: "#fff",
+                  fontWeight: "bold",
+                })
+              }
+            >
+              {obj.deviceName}
+            </Typography>
+          </div>
+        </Paper>
+      </Grid>
+    );
+  };
+
+  renderStream2 = (obj, index) => {
+    var urlStream = this.state.baseUrl + obj.IpAddress + this.state.extenstion;
+    return (
+      <Grid item xs={4} key={index}>
+        <Paper style={{ padding: "10px", backgroundColor: "#000" }}>
+          <div className="player-wrapper">
+            <ReactPlayer
+              className="react-player"
+              key={urlStream}
+              url={urlStream}
+              width="100%"
+              height="100%"
+              playing={true}
+              loop={true}
+              controls={true}
+            />
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              marginLeft: "10px",
+              marginRight: "10px",
+              marginTop: "-20px",
+              zIndex: 1,
+            }}
+          >
+            <Typography
+              component="span"
+              variant="h1"
+              style={
+                (stylesListComent.inline,
+                {
+                  fontSize: 14,
+                  color: "#fff",
+                  fontWeight: "bold",
+                })
+              }
+            >
+              {obj.deviceName}
+            </Typography>
+          </div>
+        </Paper>
+      </Grid>
+    );
+  };
+
   renderGridListView = () => {
     if (this.state.girdView === 1) {
       return (
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={{ xs: 2 }} columns={{ xs: 4 }}>
-            {this.state.listViewCamera.map((obj, index) => (
-              <Grid item xs={2} key={index}>
-                <Paper style={{ padding: "10px" }}>
-                  <div className="default-video" style={{ height: "450px" }}>
-                    <div
-                      id={"video-canvas" + index}
-                      style={{ height: "100%", width: "100%" }}
-                    ></div>
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      marginLeft: "10px",
-                      marginRight: "10px",
-                      marginTop: "-35px",
-                      zIndex: 1,
-                    }}
-                  >
-                    <Typography
-                      component="span"
-                      variant="h1"
-                      style={
-                        (stylesListComent.inline,
-                        {
-                          fontSize: 14,
-                          color: "#fff",
-                          fontWeight: "bold",
-                        })
-                      }
-                    >
-                      {obj.deviceName}
-                    </Typography>
-                  </div>
-                </Paper>
-              </Grid>
-            ))}
+            {this.state.listViewCamera.map((obj, index) =>
+              this.renderStream1(obj, index)
+            )}
           </Grid>
         </Box>
       );
@@ -314,42 +401,9 @@ class LiveViewPage extends Component {
       return (
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={{ xs: 2 }} columns={{ xs: 12 }}>
-            {this.state.listViewCamera.map((obj, index) => (
-              <Grid item xs={4} key={index}>
-                <Paper style={{ padding: "10px" }}>
-                  <div className="default-video" style={{ height: "350px" }}>
-                    <div
-                      id={"video-canvas" + index}
-                      style={{ height: "100%", width: "100%" }}
-                    ></div>
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      marginLeft: "10px",
-                      marginRight: "10px",
-                      marginTop: "-35px",
-                      zIndex: 1,
-                    }}
-                  >
-                    <Typography
-                      component="span"
-                      variant="h1"
-                      style={
-                        (stylesListComent.inline,
-                        {
-                          fontSize: 14,
-                          color: "#fff",
-                          fontWeight: "bold",
-                        })
-                      }
-                    >
-                      {obj.deviceName}
-                    </Typography>
-                  </div>
-                </Paper>
-              </Grid>
-            ))}
+            {this.state.listViewCamera.map((obj, index) =>
+              this.renderStream2(obj, index)
+            )}
           </Grid>
         </Box>
       );
@@ -368,7 +422,9 @@ class LiveViewPage extends Component {
           <Box
             style={{
               backgroundColor: "#f2f2f2",
-              height: "100%",
+              height: "100vh",
+              overflow: "auto",
+              padding: 10,
             }}
           >
             <Box sx={{ flexGrow: 1 }}>
@@ -447,6 +503,48 @@ class LiveViewPage extends Component {
                         View:
                       </Typography>
                       {this.renderView()}
+                      <div style={{ marginLeft: 10 }}>
+                        <Button
+                          variant="contained"
+                          style={{
+                            backgroundColor: "#006432",
+                          }}
+                          startIcon={<ViewHeadlineOutlined />}
+                          onClick={() => this.doViewAll()}
+                        >
+                          <Typography
+                            variant="button"
+                            style={{
+                              fontSize: 14,
+                              color: "#fff",
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            View All
+                          </Typography>
+                        </Button>
+                      </div>
+                      <div style={{ marginLeft: 10 }}>
+                        <Button
+                          variant="contained"
+                          style={{
+                            backgroundColor: "#006432",
+                          }}
+                          startIcon={<Refresh />}
+                          onClick={() => this.reset()}
+                        >
+                          <Typography
+                            variant="button"
+                            style={{
+                              fontSize: 14,
+                              color: "#fff",
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            Reset
+                          </Typography>
+                        </Button>
+                      </div>
                     </div>
                     <br></br>
                   </Paper>
@@ -587,6 +685,27 @@ class LiveViewPage extends Component {
                         }}
                       >
                         Fullscreen
+                      </Typography>
+                    </Button>
+                  </div>
+                  <div style={{ marginLeft: 10 }}>
+                    <Button
+                      variant="contained"
+                      style={{
+                        backgroundColor: "#006432",
+                      }}
+                      startIcon={<Refresh />}
+                      onClick={() => this.reset()}
+                    >
+                      <Typography
+                        variant="button"
+                        style={{
+                          fontSize: 14,
+                          color: "#fff",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        Reset
                       </Typography>
                     </Button>
                   </div>

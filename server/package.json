@@ -5,16 +5,20 @@
   "author": "Mael T.",
   "license": "MIT",
   "scripts": {
-    "start": "node app.js"
+    "serve": "nodemon server.js"
   },
   "dependencies": {
     "axios": "^0.24.0",
+    "child_process": "^1.0.2",
     "express": "^4.17.2",
+    "find-remove": "^4.0.4",
     "http": "0.0.1-security",
     "node-rtsp-recorder": "^1.0.3",
     "node-rtsp-stream": "^0.0.9",
+    "nodemon": "^2.0.15",
     "rtsp-downloader": "^1.0.2",
     "rtsp-video-recorder": "^2.0.2-beta.1",
+    "rtsp-video-recorder-ffmpeg-options": "^1.4.0-alpha.3",
     "websocket": "^1.0.34"
   },
   "devDependencies": {

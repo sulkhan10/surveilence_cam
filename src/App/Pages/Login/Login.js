@@ -14,7 +14,9 @@ const stylesListComent = {
 };
 
 var player = null;
-const client = new W3CWebSocket("ws://192.168.0.250:8000");
+// const client = new W3CWebSocket("ws://192.168.0.250:4000");
+const client = new W3CWebSocket("ws://127.0.0.1:4000");
+// const client = new W3CWebSocket("ws://192.168.0.107:4000");
 class Login extends Component {
   constructor(props) {
     super(props);
@@ -38,6 +40,15 @@ class Login extends Component {
       console.log("WebSocket Client Connected");
       this.sendRequest("startDiscovery");
     };
+  };
+
+  sendRequest = (method, params) => {
+    client.send(
+      JSON.stringify({
+        method: method,
+        params: params,
+      })
+    );
   };
 
   doLogin = () => {
