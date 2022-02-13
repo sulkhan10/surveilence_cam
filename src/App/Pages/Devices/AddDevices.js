@@ -147,6 +147,10 @@ class AddDevicesPage extends Component {
   };
 
   componentWillUnmount = () => {
+    // if (player !== null) {
+    //   player.destroy();
+    // }
+
     this.sendRequest("disconnected", {
       status: "diconnected",
     });

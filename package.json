@@ -41,6 +41,7 @@
     "react-simple-image-viewer": "0.0.7",
     "react-table": "^6.11.5",
     "reactstrap": "^6.4.0",
+    "samba-client": "^4.0.0",
     "styled-components": "^5.3.3",
     "websocket": "^1.0.34"
   },

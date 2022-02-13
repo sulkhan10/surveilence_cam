@@ -188,148 +188,42 @@ class Menu extends Component {
         },
         {
           id: 1,
-          label: "User",
+          label: "Camera",
           to: "",
           openChild: false,
-          childs: [{ id: 12, label: "Member", to: "/panel/listuser" }],
+          childs: [
+            {
+              id: 11,
+              label: "Live View",
+              to: "/panel/liveView",
+            },
+            {
+              id: 12,
+              label: "Playback",
+              to: "/panel/playback",
+            },
+          ],
         },
         {
           id: 2,
-          label: "Master",
-          to: "",
-          openChild: false,
-          childs: [
-            {
-              id: 21,
-              label: this.language["community"],
-              to: "/panel/listcommunity",
-            },
-            {
-              id: 22,
-              label: "Tags",
-              to: "/panel/listtag",
-            },
-            {
-              id: 23,
-              label: "Location",
-              to: "/panel/location",
-            },
-            {
-              id: 24,
-              label: "Chapter",
-              to: "/panel/listchapter",
-            },
-            {
-              id: 25,
-              label: "Vehicle Type",
-              to: "/panel/vehicletype",
-            },
-            {
-              id: 26,
-              label: "Membership Fee",
-              to: "/panel/membershipfeelist",
-            },
-            {
-              id: 27,
-              label: "Member Number",
-              to: "/panel/membernumber",
-            },
-          ],
-        },
-
-        {
-          id: 3,
           label: "Category",
           to: "",
           openChild: false,
-          childs: [
-            {
-              id: 31,
-              label: "Merchant",
-              to: "/panel/listmerchantcategory",
-            },
-            {
-              id: 32,
-              label: "Commodity",
-              to: "/panel/listcommoditycategory",
-            },
-            {
-              id: 33,
-              label: "Directory",
-              to: "/panel/listdirectorycategory",
-            },
-            {
-              id: 34,
-              label: "News",
-              to: "/panel/listnewscategory",
-            },
-          ],
-        },
-
-        {
-          id: 4,
-          label: "Basic Menu",
-          to: "",
-          openChild: false,
-          childs: [
-            { id: 41, label: this.language["news"], to: "/panel/news" },
-            {
-              id: 42,
-              label: this.language["moments"],
-              to: "/panel/listmoments",
-            },
-            {
-              id: 43,
-              label: "Emergency",
-              to: "/panel/listcallcenter",
-            },
-            {
-              id: 44,
-              label: this.language["directory"],
-              to: "/panel/listdirectory",
-            },
-          ],
+          childs: [],
         },
         {
-          id: 5,
-          label: this.language["marketplace"],
+          id: 2,
+          label: "Service",
           to: "",
           openChild: false,
-          childs: [
-            {
-              id: 51,
-              label: this.language["marketplaceadvertisement"],
-              to: "/panel/listmarketplaceadvertisement",
-            },
-            {
-              id: 52,
-              label: "List of Merchants",
-              to: "/panel/listmerchant",
-            },
-            {
-              id: 53,
-              label: "Order List",
-              to: "/panel/orderList",
-            },
-          ],
+          childs: [],
         },
         {
-          id: 6,
-          label: "Report",
+          id: 3,
+          label: "Management",
           to: "",
           openChild: false,
-          childs: [
-            {
-              id: 61,
-              label: "Check Out",
-              to: "/panel/checktransaction",
-            },
-            {
-              id: 62,
-              label: "Payment",
-              to: "/panel/paymenttransaction",
-            },
-          ],
+          childs: [],
         },
       ],
     });

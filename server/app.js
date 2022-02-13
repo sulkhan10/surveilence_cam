@@ -149,6 +149,48 @@ function StreamCamera(conn, params) {
   conn.send(JSON.stringify(res));
 }
 
+function FFMPEGstreamCamera(conn, params) {
+  let dt = params.dataStream;
+  var cmd_ffmpeg = "ffmpeg";
+  var args_parameter = [
+    "-i",
+    dt.urlRTSP,
+    "-fflags",
+    "flush_packets",
+    "-max_delay",
+    "2",
+    "-flags",
+    "-global_header",
+    "-hls_time",
+    "5",
+    "-hls_list_size",
+    "3",
+    "-r",
+    dt.frameRate,
+    "-s",
+    dt.videoSize,
+    "-vcodec",
+    "copy",
+    "-y",
+    "./videos/stream/" + dt.IpAddress + "_.m3u8",
+  ];
+
+  processHLS = spawn(cmd_ffmpeg, args_parameter);
+
+  processHLS.stdout.on("data", function (data) {
+    console.log("cek data output", data);
+  });
+
+  processHLS.stderr.setEncoding("utf8");
+  processHLS.stderr.on("data", function (data) {
+    console.log(data);
+  });
+
+  processHLS.on("close", function () {
+    console.log("finished");
+  });
+}
+
 function StartRecorder(conn, params) {
   var rec = new Recorder({
     url: params.url_rtsp,
@@ -290,3 +332,565 @@ setInterval(() => {
 //     "-b:a": "128k", // audio bit rate
 //   },
 // });
+
+// var cmd_ffmpeg = "ffmpeg";
+// var args_parameter = [
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "2",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "2",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/stream/192.168.0.102_.m3u8",
+// ];
+
+// var processHLS = spawn(cmd_ffmpeg, args_parameter);
+
+// processHLS.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS.stderr.setEncoding("utf8");
+// processHLS.stderr.on("data", function (data) {
+//   console.log("read data " + data);
+// });
+
+// processHLS.on("close", function (data) {
+//   console.log("finished " + data);
+// });
+
+// var cmd_ffmpeg2 = "ffmpeg";
+// var args_parameter2 = [
+//   "-rtsp_transport",
+//   "tcp",
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-r",
+//   "10",
+//   "-t",
+//   "60",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/record/%Y%m%d-%H%M.mp4",
+// ];
+
+// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+
+// processHLS2.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS2.stderr.setEncoding("utf8");
+// processHLS2.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS2.on("close", function (data) {
+//   console.log("finished" + data);
+// });
+
+// var cmd_ffmpeg2 = "ffmpeg";
+// var args_parameter2 = [
+//   "-i",
+//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "5",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "5",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/camera/192.168.0.104.m3u8",
+// ];
+
+// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+
+// processHLS2.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS2.stderr.setEncoding("utf8");
+// processHLS2.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS2.on("close", function () {
+//   console.log("finished");
+// });
+
+// var cmd_ffmpeg = "ffmpeg";
+// var args_parameter = [
+//   // "-i",
+//   // "rtsp://admin:admin@192.168.0.102:554/11",
+//   // "-map",
+//   // "0",
+//   // "-fflags",
+//   // "flush_packets",
+//   // "-max_delay",
+//   // "2",
+//   // "-flags",
+//   // "-global_header",
+//   // "-hls_time",
+//   // "3",
+//   // "-hls_list_size",
+//   // "3",
+//   // "-vcodec",
+//   // "copy",
+//   // "-y",
+//   // "./videos/stream/192.168.0.102_.m3u8",
+//   "-rtsp_transport",
+//   "tcp",
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-r",
+//   "10",
+//   "-t",
+//   "60",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/record/rec_192.168.0.102_.mp4",
+// ];
+
+// var processHLS = spawn(cmd_ffmpeg, args_parameter);
+
+// processHLS.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS.stderr.setEncoding("utf8");
+// processHLS.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS.on("close", function () {
+//   console.log("finished");
+// });
+
+// var cmd_ffmpeg2 = "ffmpeg";
+// var args_parameter2 = [
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-map",
+//   "0",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "2",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "3",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/stream/192.168.0.102:554_.m3u8",
+//   "-i",
+//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
+//   "-map",
+//   "1",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "2",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "10",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/record/rec_192.168.0.104_.m3u8",
+// ];
+
+// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+
+// processHLS2.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS2.stderr.setEncoding("utf8");
+// processHLS2.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS2.on("close", function () {
+//   console.log("finished");
+// });
+
+// const recorder = new Recorder(
+//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
+//   "/videos/record",
+//   {
+//     title: "Test Camera",
+//   }
+// );
+
+// var rec = new Recorder({
+//   url: "rtsp://admin:admin@192.168.0.102:554/11",
+//   // timeLimit: 60 * 15, // 15 minutes
+//   // folderSizeLimit: 5,
+//   folder: join(__dirname, "/videos/"),
+//   name: "HomeTazik",
+//   directoryPathFormat: "YYYY-MM-DD",
+//   fileNameFormat: "YYYY-MM-DD-hh-mm-ss",
+// });
+
+// rec.startRecording();
+// setTimeout(() => {
+//   console.log("Stopping Recording");
+//   rec.stopRecording();
+//   rec = null;
+// }, 30000);
+
+// recorder.on(RecorderEvents.STARTED, (payload) => {
+//   assert.equal(payload, {
+//     uri: "rtsp://admin:admin@192.168.0.102:554/11",
+//     destination: "/media/Recorder",
+//     playlist: "playlist.mp4",
+//     title: "Test Camera",
+//     filePattern: "%Y.%m.%d/%H.%M.%S",
+//     segmentTime: 600,
+//     noAudio: false,
+//     ffmpegBinary: "ffmpeg",
+//   });
+// });
+
+// const testFolder = "./videos";
+// const testFolder2 = "/HomeTazik";
+// const datetime = "/2022-02-03/video/";
+
+// fs.readdir(testFolder + testFolder2 + datetime, (err, files) => {
+//   console.log("get all file arr", files);
+//   files.forEach((file) => {
+//     // console.log("cek file", file);
+//   });
+// });
+
+// const SambaClient = require("samba-client");
+// const testFile = "tes.txt";
+// var clientSMB = new SambaClient({
+//   address: "//192.168.0.117/camstorage",
+//   username: "camera",
+//   password: "Cideng87c",
+// });
+// clientSMB.sendFile(
+//   "./videos/HomeTazik/20220203/text.txt",
+//   "/HomeTazik/20220203",
+//   function (err) {
+//     console.log(`send file to ${clientSMB.address}`);
+//   }
+// );
+
+// clientSMB.sendFile(
+//   "./videos/HomeTazik/20220203/text.txt",
+//   "/HomeTazik/20220203",
+//   function (err, data) {
+//     if (err) {
+//       console.log(`error to send ${clientSMB.address}`);
+//     } else {
+//       console.log(`send file to ${clientSMB.address}`);
+//     }
+//   }
+// );
+
+// var cmd_ffmpeg = "ffmpeg";
+// var args_parameter = [
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "2",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "2",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/stream/192.168.0.102_.m3u8",
+// ];
+
+// var processHLS = spawn(cmd_ffmpeg, args_parameter);
+
+// processHLS.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS.stderr.setEncoding("utf8");
+// processHLS.stderr.on("data", function (data) {
+//   console.log("read data " + data);
+// });
+
+// processHLS.on("close", function (data) {
+//   console.log("finished " + data);
+// });
+
+// var cmd_ffmpeg2 = "ffmpeg";
+// var args_parameter2 = [
+//   "-rtsp_transport",
+//   "tcp",
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-r",
+//   "10",
+//   "-t",
+//   "60",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/record/%Y%m%d-%H%M.mp4",
+// ];
+
+// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+
+// processHLS2.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS2.stderr.setEncoding("utf8");
+// processHLS2.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS2.on("close", function (data) {
+//   console.log("finished" + data);
+// });
+
+// var cmd_ffmpeg2 = "ffmpeg";
+// var args_parameter2 = [
+//   "-i",
+//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "5",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "5",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/camera/192.168.0.104.m3u8",
+// ];
+
+// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+
+// processHLS2.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS2.stderr.setEncoding("utf8");
+// processHLS2.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS2.on("close", function () {
+//   console.log("finished");
+// });
+
+// var cmd_ffmpeg = "ffmpeg";
+// var args_parameter = [
+//   // "-i",
+//   // "rtsp://admin:admin@192.168.0.102:554/11",
+//   // "-map",
+//   // "0",
+//   // "-fflags",
+//   // "flush_packets",
+//   // "-max_delay",
+//   // "2",
+//   // "-flags",
+//   // "-global_header",
+//   // "-hls_time",
+//   // "3",
+//   // "-hls_list_size",
+//   // "3",
+//   // "-vcodec",
+//   // "copy",
+//   // "-y",
+//   // "./videos/stream/192.168.0.102_.m3u8",
+//   "-rtsp_transport",
+//   "tcp",
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-r",
+//   "10",
+//   "-t",
+//   "60",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/record/rec_192.168.0.102_.mp4",
+// ];
+
+// var processHLS = spawn(cmd_ffmpeg, args_parameter);
+
+// processHLS.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS.stderr.setEncoding("utf8");
+// processHLS.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS.on("close", function () {
+//   console.log("finished");
+// });
+
+// var cmd_ffmpeg2 = "ffmpeg";
+// var args_parameter2 = [
+//   "-i",
+//   "rtsp://admin:admin@192.168.0.102:554/11",
+//   "-map",
+//   "0",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "2",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "3",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/stream/192.168.0.102:554_.m3u8",
+//   "-i",
+//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
+//   "-map",
+//   "1",
+//   "-fflags",
+//   "flush_packets",
+//   "-max_delay",
+//   "2",
+//   "-flags",
+//   "-global_header",
+//   "-hls_time",
+//   "10",
+//   "-hls_list_size",
+//   "3",
+//   "-vcodec",
+//   "copy",
+//   "-y",
+//   "./videos/record/rec_192.168.0.104_.m3u8",
+// ];
+
+// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+
+// processHLS2.stdout.on("data", function (data) {
+//   console.log("cek data output", data);
+// });
+
+// processHLS2.stderr.setEncoding("utf8");
+// processHLS2.stderr.on("data", function (data) {
+//   console.log(data);
+// });
+
+// processHLS2.on("close", function () {
+//   console.log("finished");
+// });
+
+// const recorder = new Recorder(
+//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
+//   "/videos/record",
+//   {
+//     title: "Test Camera",
+//   }
+// );
+
+// var rec = new Recorder({
+//   url: "rtsp://admin:admin@192.168.0.102:554/11",
+//   // timeLimit: 60 * 15, // 15 minutes
+//   // folderSizeLimit: 5,
+//   folder: join(__dirname, "/videos/"),
+//   name: "HomeTazik",
+//   directoryPathFormat: "YYYY-MM-DD",
+//   fileNameFormat: "YYYY-MM-DD-hh-mm-ss",
+// });
+
+// rec.startRecording();
+// setTimeout(() => {
+//   console.log("Stopping Recording");
+//   rec.stopRecording();
+//   rec = null;
+// }, 30000);
+
+// recorder.on(RecorderEvents.STARTED, (payload) => {
+//   assert.equal(payload, {
+//     uri: "rtsp://admin:admin@192.168.0.102:554/11",
+//     destination: "/media/Recorder",
+//     playlist: "playlist.mp4",
+//     title: "Test Camera",
+//     filePattern: "%Y.%m.%d/%H.%M.%S",
+//     segmentTime: 600,
+//     noAudio: false,
+//     ffmpegBinary: "ffmpeg",
+//   });
+// });
+
+// const testFolder = "./videos";
+// const testFolder2 = "/HomeTazik";
+// const datetime = "/2022-02-03/video/";
+
+// fs.readdir(testFolder + testFolder2 + datetime, (err, files) => {
+//   console.log("get all file arr", files);
+//   files.forEach((file) => {
+//     // console.log("cek file", file);
+//   });
+// });
+
+// const SambaClient = require("samba-client");
+// const testFile = "tes.txt";
+// var clientSMB = new SambaClient({
+//   address: "//192.168.0.117/camstorage",
+//   username: "camera",
+//   password: "Cideng87c",
+// });
+// clientSMB.sendFile(
+//   "./videos/HomeTazik/20220203/text.txt",
+//   "/HomeTazik/20220203",
+//   function (err) {
+//     console.log(`send file to ${clientSMB.address}`);
+//   }
+// );
+
+// clientSMB.sendFile(
+//   "./videos/HomeTazik/20220203/text.txt",
+//   "/HomeTazik/20220203",
+//   function (err, data) {
+//     if (err) {
+//       console.log(`error to send ${clientSMB.address}`);
+//     } else {
+//       console.log(`send file to ${clientSMB.address}`);
+//     }
+//   }
+// );

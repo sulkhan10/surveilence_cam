@@ -1,18 +1,24 @@
 // import Recorder, { RecorderEvents } from "rtsp-video-recorder";
 Stream = require("node-rtsp-stream");
+var moment = require("moment");
+var axios = require("axios");
+var webserviceurl =
+  "http://smart-community.csolusi.com/SmartSurveillanceSystem_webapi_cp";
 var spawn = require("child_process").spawn;
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
 const { join } = require("path");
 const findRemoveSync = require("find-remove");
 const Recorder = require("node-rtsp-recorder").Recorder;
 const FileHandler = require("rtsp-downloader").FileHandler;
 const fs = require("fs");
 const fh = new FileHandler();
-
+const SambaClient = require("samba-client");
 const webSocketsServerPort = 4000;
 const webSocketServer = require("websocket").server;
 const http = require("http");
 const server = http.createServer(function (request, response) {
-  console.log("request starting...", new Date());
+  // console.log("request starting...", new Date());
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
@@ -26,7 +32,7 @@ const server = http.createServer(function (request, response) {
     return;
   }
   var filePath = "./videos/stream" + request.url;
-  console.log("cek filePath:", filePath);
+  // console.log("cek filePath:", filePath);
   fs.readFile(filePath, function (error, content) {
     response.writeHead(200, { "Access-Control-Allow-Origin": "*" });
     if (error) {
@@ -52,9 +58,20 @@ const wsServer = new webSocketServer({
   httpServer: server,
 });
 
+var clientSMB = new SambaClient({
+  address: "//192.168.0.117/camstorage",
+  username: "camera",
+  password: "Cideng87c",
+});
+
+const format1 = "YYYY-MM-DD";
+var date = new Date();
+var DateNow = moment(date).format(format1);
+//console.log(DateNow.replace(/-/g, ""));
+
 var stream = null;
 var StremDataLiveView = null;
-
+var dataStremCamera = null;
 var processHLS = null;
 
 // Generates unique ID for every new connection
@@ -66,15 +83,7 @@ const getUniqueID = () => {
   return s4() + s4() + "-" + s4();
 };
 
-// I'm maintaining all active connections in this object
 const clients = {};
-// I'm maintaining all active users in this object
-const users = {};
-// The current editor content is maintained here.
-let editorContent = null;
-// User activity history.
-let userActivity = [];
-
 wsServer.on("request", function (request) {
   var userID = getUniqueID();
   console.log(
@@ -99,8 +108,6 @@ wsServer.on("request", function (request) {
       startDiscovery(conn);
     } else if (method === "connect") {
       StreamCamera(conn, params);
-      // FFMPEGtestingDevice(conn, params);
-      // StartRecorder(conn, params);
     } else if (method === "disconnected") {
       StopCamera(conn, params);
     } else if (method === "startLiveView") {
@@ -108,7 +115,7 @@ wsServer.on("request", function (request) {
     } else if (method === "disconnectedLive") {
       StopCameraLive(conn, params);
     } else if (method === "addStreaming") {
-      FFMPEGstreamCamera(conn, params);
+      saveCameraList(dataStremCamera, params.dataStream);
     }
   });
   // user disconnected
@@ -126,10 +133,15 @@ function startDiscovery(conn) {
 
 function StreamCamera(conn, params) {
   console.log("parameter", params);
-  var wsPortCamera = 6789;
+  var digits = "0123456789";
+  let randomport = "";
+  for (let i = 0; i < 3; i++) {
+    randomport += digits[Math.floor(Math.random() * 10)];
+  }
+  var wsPortCamera = 6 + randomport;
+  console.log("cek randomport", wsPortCamera);
   stream = new Stream({
     name: "defaultCamera",
-    // streamUrl: "rtsp://YOUR_IP:PORT",
     streamUrl: params.url_rtsp,
     wsPort: wsPortCamera,
     ffmpegOptions: {
@@ -157,67 +169,6 @@ function StreamCamera(conn, params) {
   conn.send(JSON.stringify(res));
 }
 
-function FFMPEGstreamCamera(conn, params) {
-  let dt = params.dataStream;
-  var cmd_ffmpeg = "ffmpeg";
-  var args_parameter = [
-    "-i",
-    dt.urlRTSP,
-    "-fflags",
-    "flush_packets",
-    "-max_delay",
-    "2",
-    "-flags",
-    "-global_header",
-    "-hls_time",
-    "5",
-    "-hls_list_size",
-    "3",
-    "-r",
-    dt.frameRate,
-    "-s",
-    dt.videoSize,
-    "-vcodec",
-    "copy",
-    "-y",
-    "./videos/stream/" + dt.IpAddress + "_.m3u8",
-  ];
-
-  processHLS = spawn(cmd_ffmpeg, args_parameter);
-
-  processHLS.stdout.on("data", function (data) {
-    console.log("cek data output", data);
-  });
-
-  processHLS.stderr.setEncoding("utf8");
-  processHLS.stderr.on("data", function (data) {
-    console.log(data);
-  });
-
-  processHLS.on("close", function () {
-    console.log("finished");
-  });
-}
-
-function StartRecorder(conn, params) {
-  var rec = new Recorder({
-    url: params.url_rtsp,
-    timeLimit: 60 * 15, // 15 minutes
-    folderSizeLimit: 5,
-    folder: join(__dirname, "/videos/"),
-    name: "defaultCamera",
-    directoryPathFormat: "YYYY-MM-DD",
-    fileNameFormat: "YYYY-M-D-h-mm-ss",
-  });
-
-  rec.startRecording();
-  setTimeout(() => {
-    console.log("Stopping Recording");
-    rec.stopRecording();
-    rec = null;
-  }, 30000);
-}
-
 function StopCamera(conn, params) {
   if (stream !== null) {
     stream.stop();
@@ -230,7 +181,6 @@ function StopCamera(conn, params) {
 }
 
 function StopCameraLive(conn, params) {
-  console.log("cek ah deuh", StremDataLiveView);
   if (StremDataLiveView !== null) {
     StremDataLiveView.map((obj, idx) => {
       obj.LiveStream.stop();
@@ -289,247 +239,290 @@ setInterval(() => {
   // console.log(result);
 }, 5000);
 
-// var cmd_ffmpeg = "ffmpeg";
-// var args_parameter = [
-//   "-i",
-//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
-//   "-fflags",
-//   "flush_packets",
-//   "-max_delay",
-//   "5",
-//   "-flags",
-//   "-global_header",
-//   "-hls_time",
-//   "5",
-//   "-hls_list_size",
-//   "3",
-//   "-vcodec",
-//   "copy",
-//   "-y",
-//   "./videos/stream/rumah.m3u8",
-// ];
+//==============GET DATA CAMERA FROM DATABASE==========================//
+axios({
+  method: "post",
+  url: webserviceurl + "/viewList.php",
+  data: {},
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+  },
+})
+  .then((response) => {
+    console.log("cek data camera List", response.data);
+    if (response.data.status === "OK") {
+      if (response.data.records.length > 0) {
+        (dataStremCamera = response.data.records),
+          saveCameraList(response.data.records, null);
+      }
+    }
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+//=======================================================================//
 
-// var processHLS = spawn(cmd_ffmpeg, args_parameter);
+function saveCameraList(dataCamera, newCamera) {
+  // console.log("cek data camera", dataCamera);
+  // console.log("cek new camera", newCamera);
+  var arrDataCamera = dataCamera === null ? [] : dataCamera;
+  if (newCamera !== null) {
+    if (dataCamera !== null) {
+      var resultCameraData = dataCamera.filter(
+        (obj) => obj.IpAddress === newCamera.IpAddress
+      );
+    } else {
+      var resultCameraData = [];
+    }
+    if (resultCameraData.length === 0) {
+      arrDataCamera.push(newCamera);
+      arrDataCamera.map((obj, i) => {
+        var pathStream = "./videos/stream/" + obj.IpAddress + "_.m3u8";
+        var cmd_ffmpeg = "ffmpeg";
+        var args_parameter = [
+          "-i",
+          obj.urlRTSP,
+          "-fflags",
+          "flush_packets",
+          "-max_delay",
+          "2",
+          "-flags",
+          "-global_header",
+          "-hls_time",
+          "2",
+          "-hls_list_size",
+          "3",
+          "-vcodec",
+          "copy",
+          "-y",
+          pathStream,
+        ];
 
-// processHLS.stdout.on("data", function (data) {
-//   console.log("cek data output", data);
-// });
+        processHLS = spawn(cmd_ffmpeg, args_parameter);
 
-// processHLS.stderr.setEncoding("utf8");
-// processHLS.stderr.on("data", function (data) {
-//   console.log("read data " + data);
-// });
+        processHLS.stdout.on("data", function (data) {
+          // console.log("cek data output", data);
+        });
 
-// processHLS.on("close", function (data) {
-//   console.log("finished " + data);
-// });
+        processHLS.stderr.setEncoding("utf8");
+        processHLS.stderr.on("data", function (data) {
+          //console.log("read data " + data);
+        });
 
-// var cmd_ffmpeg2 = "ffmpeg";
-// var args_parameter2 = [
-//   "-rtsp_transport",
-//   "tcp",
-//   "-i",
-//   "rtsp://admin:admin@192.168.0.102:554/11",
-//   "-r",
-//   "10",
-//   "-t",
-//   "60",
-//   "-vcodec",
-//   "copy",
-//   "-y",
-//   "./videos/record/%Y%m%d-%H%M.mp4",
-// ];
+        processHLS.on("close", function (data) {
+          console.log("finished " + data);
+          processHLS = null;
+          rec.stopRecording();
+          saveCameraList(arrDataCamera, null);
+        });
 
-// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+        clientSMB.mkdir(obj.deviceName.replace(/\s/g, ""));
 
-// processHLS2.stdout.on("data", function (data) {
-//   console.log("cek data output", data);
-// });
+        var rec = new Recorder({
+          url: obj.urlRTSP,
+          folder: join(__dirname, "/videos/record"),
+          name: obj.deviceName.replace(/\s/g, ""),
+          directoryPathFormat: "YYYYMMDD",
+          fileNameFormat: "hhmmss",
+        });
+        rec.startRecording();
+      });
+    }
+  } else {
+    arrDataCamera = dataCamera;
+    arrDataCamera.map((obj, i) => {
+      var pathStream = "./videos/stream/" + obj.IpAddress + "_.m3u8";
+      var cmd_ffmpeg = "ffmpeg";
+      var args_parameter = [
+        "-i",
+        obj.urlRTSP,
+        "-fflags",
+        "flush_packets",
+        "-max_delay",
+        "2",
+        "-flags",
+        "-global_header",
+        "-hls_time",
+        "2",
+        "-hls_list_size",
+        "3",
+        "-vcodec",
+        "copy",
+        "-y",
+        pathStream,
+      ];
 
-// processHLS2.stderr.setEncoding("utf8");
-// processHLS2.stderr.on("data", function (data) {
-//   console.log(data);
-// });
+      processHLS = spawn(cmd_ffmpeg, args_parameter);
 
-// processHLS2.on("close", function (data) {
-//   console.log("finished" + data);
-// });
+      processHLS.stdout.on("data", function (data) {
+        // console.log("cek data output", data);
+      });
 
-// var cmd_ffmpeg2 = "ffmpeg";
-// var args_parameter2 = [
-//   "-i",
-//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
-//   "-fflags",
-//   "flush_packets",
-//   "-max_delay",
-//   "5",
-//   "-flags",
-//   "-global_header",
-//   "-hls_time",
-//   "5",
-//   "-hls_list_size",
-//   "3",
-//   "-vcodec",
-//   "copy",
-//   "-y",
-//   "./videos/camera/192.168.0.104.m3u8",
-// ];
+      processHLS.stderr.setEncoding("utf8");
+      processHLS.stderr.on("data", function (data) {
+        // console.log("read data " + data);
+      });
 
-// var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
+      processHLS.on("close", function (data) {
+        console.log("finished " + data);
+        processHLS = null;
+        rec.stopRecording();
+        saveCameraList(arrDataCamera, null);
+      });
 
-// processHLS2.stdout.on("data", function (data) {
-//   console.log("cek data output", data);
-// });
+      // clientSMB.mkdir(obj.deviceName.replace(/\s/g, ""));
 
-// processHLS2.stderr.setEncoding("utf8");
-// processHLS2.stderr.on("data", function (data) {
-//   console.log(data);
-// });
+      var rec = new Recorder({
+        url: obj.urlRTSP,
+        folder: join(__dirname, "/videos/record"),
+        name: obj.deviceName.replace(/\s/g, ""),
+        directoryPathFormat: "YYYYMMDD",
+        fileNameFormat: "hhmmss",
+      });
+      rec.startRecording();
+    });
 
-// processHLS2.on("close", function () {
-//   console.log("finished");
-// });
+    setTimeout(function () {
+      console.log("Call fungsi get file from local directory");
+      doReadFileFromLocal(arrDataCamera);
+    }, 69000);
+  }
 
-var cmd_ffmpeg = "ffmpeg";
-var args_parameter = [
-  "-i",
-  "rtsp://admin:admin@192.168.0.102:554/11",
-  "-map",
-  "0",
-  "-fflags",
-  "flush_packets",
-  "-max_delay",
-  "2",
-  "-flags",
-  "-global_header",
-  "-hls_time",
-  "3",
-  "-hls_list_size",
-  "3",
-  "-vcodec",
-  "copy",
-  "-y",
-  "./videos/stream/192.168.0.102_.m3u8",
-  // "-i",
-  // "rtsp://admin:admin@192.168.0.102:554/11",
-  // "-map",
-  // "1",
-  // "-rtsp_transport",
-  // "tcp",
-  // "-r",
-  // "10",
-  // "-t",
-  // "60",
-  // "-vcodec",
-  // "copy",
-  // "-y",
-  // "./videos/record/rec_192.168.0.102_.mp4",
-];
+  // setTimeout(function () {
+  //   console.log("retry data");
+  //   saveCameraList(arrDataCamera, null);
+  // }, 1000);
+}
 
-var processHLS = spawn(cmd_ffmpeg, args_parameter);
+function doReadFileFromLocal(arrDataCamera) {
+  const basePath = "./videos/record";
 
-processHLS.stdout.on("data", function (data) {
-  console.log("cek data output", data);
-});
+  if (arrDataCamera.length > 0) {
+    arrDataCamera.forEach((obj) => {
+      const dirPath = "/" + obj.deviceName.replace(/\s/g, "");
+      const datetime = "/" + DateNow.replace(/-/g, "") + "/video/";
+      clientSMB.mkdir(
+        obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
+      );
+      fs.readdir(basePath + dirPath + datetime, (err, files) => {
+        if (!err) {
+          console.log("file from local", files);
+          return runSendFile(
+            files,
+            obj.deviceName.replace(/\s/g, ""),
+            DateNow.replace(/-/g, "")
+          );
+        }
+      });
+    });
+  }
+}
 
-processHLS.stderr.setEncoding("utf8");
-processHLS.stderr.on("data", function (data) {
-  console.log(data);
-});
+async function runSendFile(datafiles, deviceName, dateNow) {
+  var dirPath =
+    "/home/cideng87/ServerCamera/videos/record/" +
+    deviceName +
+    "/" +
+    dateNow +
+    "/video/" +
+    ";";
+  var sendPath = "/" + deviceName + "/" + dateNow + ";";
+  if (datafiles.length > 0) {
+    const promisesArr = datafiles.map(async (file, i) => {
+      new Promise((resolve) =>
+        setTimeout(async () => {
+          try {
+            const { stdout, stderr } = await exec(
+              "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+                " 'cd " +
+                sendPath +
+                " lcd " +
+                dirPath +
+                " put " +
+                file +
+                "'"
+            );
+            console.log("stdout:", stdout);
+            console.log("stderr:", stderr);
+          } catch (e) {
+            console.error(e);
+          }
+          resolve();
+        }, 60000 * i)
+      );
+    });
+    await Promise.all(promisesArr).then(() => console.log("done"));
+  }
+}
 
-processHLS.on("close", function () {
-  console.log("finished");
-});
-
-var cmd_ffmpeg2 = "ffmpeg";
-var args_parameter2 = [
-  "-i",
-  "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
-  "-map",
-  "0",
-  "-fflags",
-  "flush_packets",
-  "-max_delay",
-  "2",
-  "-flags",
-  "-global_header",
-  "-hls_time",
-  "3",
-  "-hls_list_size",
-  "3",
-  "-vcodec",
-  "copy",
-  "-y",
-  "./videos/stream/192.168.0.104_.m3u8",
-  // "-i",
-  // "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
-  // "-map",
-  // "1",
-  // "-fflags",
-  // "flush_packets",
-  // "-max_delay",
-  // "2",
-  // "-flags",
-  // "-global_header",
-  // "-hls_time",
-  // "10",
-  // "-hls_list_size",
-  // "3",
-  // "-vcodec",
-  // "copy",
-  // "-y",
-  // "./videos/record/rec_192.168.0.104_.m3u8",
-];
-
-var processHLS2 = spawn(cmd_ffmpeg2, args_parameter2);
-
-processHLS2.stdout.on("data", function (data) {
-  console.log("cek data output", data);
-});
-
-processHLS2.stderr.setEncoding("utf8");
-processHLS2.stderr.on("data", function (data) {
-  console.log(data);
-});
-
-processHLS2.on("close", function () {
-  console.log("finished");
-});
-
-// const recorder = new Recorder(
-//   "rtsp://SIMCAM:RJCFCV@192.168.0.104/live",
-//   "/videos/record",
-//   {
-//     title: "Test Camera",
+// async function runSendFile(datafiles) {
+//   if (datafiles.length > 0) {
+//     var dirPath =
+//       "/home/cideng87/ServerCamera/videos/record/IPCameraLT4/20220208/video/" +
+//       ";";
+//     var sendPath = "/IPCameraLT4/2022020" + ";";
+//     var sendFile = "023518.mp4";
+//     datafiles.forEach((file) => {
+//       try {
+//         const { stdout, stderr } = await exec(
+//           "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+//             " 'cd " +
+//             sendPath +
+//             " lcd " +
+//             dirPath +
+//             " put " +
+//             file +
+//             "'"
+//         );
+//         console.log("stdout:", stdout);
+//         console.log("stderr:", stderr);
+//       } catch (e) {
+//         console.error(e);
+//       }
+//     });
 //   }
-// );
+// }
 
-// var rec = new Recorder({
-//   url: "rtsp://admin:admin@192.168.0.102:554/11",
-//   timeLimit: 60 * 15, // 15 minutes
-//   folderSizeLimit: 5,
-//   folder: join(__dirname, "/videos/"),
-//   name: "ipcamera",
-//   directoryPathFormat: "YYYY-MM-DD",
-//   fileNameFormat: "YYYY-MM-DD-hh-mm-ss",
+// const basePath = "./videos/record";
+// const dirPath = "/IPCameraLT4";
+// const datetime = "/20220208/video/";
+// clientSMB.mkdir("IPCameraLT4/20220208");
+// fs.readdir(basePath + dirPath + datetime, (err, files) => {
+//   runSendFile(files);
 // });
 
-// rec.startRecording();
-// setTimeout(() => {
-//   console.log("Stopping Recording");
-//   rec.stopRecording();
-//   rec = null;
-// }, 30000);
+// async function runSendFile(datafiles) {
+//   if (datafiles.length > 0) {
+//     var dirPath =
+//       "/home/cideng87/ServerCamera/videos/record/IPCameraLT4/20220208/video/" +
+//       ";";
+//     var sendPath = "/IPCameraLT4/2022020" + ";";
+//     var sendFile = "023518.mp4";
+//     datafiles.forEach((file) => {
+//       try {
+//         const { stdout, stderr } = await exec(
+//           "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+//             " 'cd " +
+//             sendPath +
+//             " lcd " +
+//             dirPath +
+//             " put " +
+//             file +
+//             "'"
+//         );
+//         console.log("stdout:", stdout);
+//         console.log("stderr:", stderr);
+//       } catch (e) {
+//         console.error(e);
+//       }
+//     });
+//   }
+// }
 
-// recorder.on(RecorderEvents.STARTED, (payload) => {
-//   assert.equal(payload, {
-//     uri: "rtsp://admin:admin@192.168.0.102:554/11",
-//     destination: "/media/Recorder",
-//     playlist: "playlist.mp4",
-//     title: "Test Camera",
-//     filePattern: "%Y.%m.%d/%H.%M.%S",
-//     segmentTime: 600,
-//     noAudio: false,
-//     ffmpegBinary: "ffmpeg",
-//   });
+// const basePath = "./videos/record";
+// const dirPath = "/IPCameraLT4";
+// const datetime = "/20220208/video/";
+// clientSMB.mkdir("IPCameraLT4/20220208");
+// fs.readdir(basePath + dirPath + datetime, (err, files) => {
+//   runSendFile(files);
 // });

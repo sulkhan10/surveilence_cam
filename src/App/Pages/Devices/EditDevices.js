@@ -138,6 +138,9 @@ class EditDevicesPage extends Component {
           this.sendRequest("disconnected", {
             status: "diconnected",
           });
+          this.sendRequest("addStreaming", {
+            dataStream: params,
+          });
         }
       })
       .catch((error) => {
@@ -170,6 +173,10 @@ class EditDevicesPage extends Component {
   };
 
   componentWillUnmount = () => {
+    // if (player !== null) {
+    //   player.destroy();
+    // }
+
     this.sendRequest("disconnected", {
       status: "diconnected",
     });

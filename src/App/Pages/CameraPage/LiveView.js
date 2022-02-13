@@ -42,9 +42,9 @@ const customStyles = {
 };
 
 var cameraplayer = null;
-const client = new W3CWebSocket("ws://127.0.0.1:8000");
+// const client = new W3CWebSocket("ws://127.0.0.1:4000");
 // const client = new W3CWebSocket("ws://192.168.0.107:8000");
-// const client = new W3CWebSocket("ws://192.168.0.250:8000");
+const client = new W3CWebSocket("ws://192.168.0.250:8000");
 
 class LiveViewPage extends Component {
   constructor(props) {
@@ -55,8 +55,8 @@ class LiveViewPage extends Component {
       // ffmpegIP: "localhost",
       // ffmpegIP: "192.168.0.107",
       // ffmpegIP: "192.168.0.250",
-      baseUrl: "http://127.0.0.1:4000/",
-      // baseUrl: "http://192.168.0.250:4000/",
+      // baseUrl: "http://127.0.0.1:4000/",
+      baseUrl: "http://192.168.0.250:4000/",
       extenstion: "_.m3u8",
       arrayData: [
         { data: "Camera 1" },
@@ -71,6 +71,7 @@ class LiveViewPage extends Component {
       listViewCamera: [],
       getDataPlayer: [],
     };
+    this.player = React.createRef();
   }
 
   //=========================API Service=====================//
@@ -282,18 +283,18 @@ class LiveViewPage extends Component {
   };
 
   ref = (player) => {
-    this.player = player;
-    console.log(player);
+    // console.log(player.player.isPlaying);
   };
 
   renderStream1 = (obj, index) => {
+    const ref = React.createRef();
     var urlStream = this.state.baseUrl + obj.IpAddress + this.state.extenstion;
     return (
-      <Grid item xs={2} key={index}>
+      <Grid item xs={2} key={obj.IpAddress}>
         <Paper style={{ padding: "10px", backgroundColor: "#000" }}>
           <div className="player-wrapper">
             <ReactPlayer
-              ref={this.ref}
+              ref={ref}
               className="react-player"
               key={urlStream}
               url={urlStream}
@@ -301,14 +302,16 @@ class LiveViewPage extends Component {
               height="100%"
               playing={true}
               playsinline={true}
-              controls={true}
-              config={{
-                file: {
-                  attributes: {
-                    preload: "auto",
-                  },
-                },
-              }}
+              controls={
+                ref.current != null
+                  ? ref.current.player.isReady === true
+                    ? true
+                    : false
+                  : true
+
+                // console.log(ref)
+              }
+              // onReady={(player) => console.log("video element:", ref.current)}
             />
           </div>
           <div

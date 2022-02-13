@@ -9,16 +9,20 @@
   },
   "dependencies": {
     "axios": "^0.24.0",
+    "buffer": "^6.0.3",
     "child_process": "^1.0.2",
+    "execa": "^6.0.0",
     "express": "^4.17.2",
     "find-remove": "^4.0.4",
     "http": "0.0.1-security",
+    "moment": "^2.29.1",
     "node-rtsp-recorder": "^1.0.3",
     "node-rtsp-stream": "^0.0.9",
     "nodemon": "^2.0.15",
     "rtsp-downloader": "^1.0.2",
     "rtsp-video-recorder": "^2.0.2-beta.1",
     "rtsp-video-recorder-ffmpeg-options": "^1.4.0-alpha.3",
+    "samba-client": "^4.0.0",
     "websocket": "^1.0.34"
   },
   "devDependencies": {
