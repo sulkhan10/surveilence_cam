@@ -36,15 +36,15 @@ const stylesListDialog = {
   },
 };
 var player = null;
-const client = new W3CWebSocket("ws://192.168.0.250:4000");
-// const client = new W3CWebSocket("ws://127.0.0.1:4000");
+// const client = new W3CWebSocket("ws://192.168.0.250:4000");
+const client = new W3CWebSocket("ws://127.0.0.1:4000");
 class EditDevicesPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      // ffmpegIP: "localhost",
+      ffmpegIP: "localhost",
       // ffmpegIP: "192.168.0.107",
-      ffmpegIP: "192.168.0.250",
+      // ffmpegIP: "192.168.0.250",
       deviceId: props.match.params.deviceId,
       deviceName: "",
       IpAddress: "",

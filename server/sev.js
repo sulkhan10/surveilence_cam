@@ -113,42 +113,42 @@
 //clientSMB.mkdir('SimhomeTazik/20220206')
 //console.log(`created directory ${clientSMB.address}`);
 
-// const userEmailArray = ["one", "two", "three"];
-// const promises = userEmailArray.map(
-//   (userEmail, i) =>
-//     new Promise((resolve) =>
-//       // setTimeout(() => {
-//       //   console.log(userEmail);
-//       //   resolve();
-//       // }, 1000 * userEmailArray.length - 1000 * i)
-//       setTimeout(() => {
-//         console.log(userEmail);
-//         resolve();
-//       }, 1000 * i)
-//     )
-// );
-// Promise.all(promises).then(() => console.log("done"));
+const userEmailArray = ["one"];
+const promises = userEmailArray.map(
+  (userEmail, i) =>
+    new Promise((resolve) =>
+      // setTimeout(() => {
+      //   console.log(userEmail);
+      //   resolve();
+      // }, 1000 * userEmailArray.length - 1000 * i)
+      setTimeout(() => {
+        console.log(userEmail);
+        resolve();
+      }, 1000 * i)
+    )
+);
+Promise.all(promises).then(() => console.log("done"));
 
-const fs = require("fs");
+// const fs = require("fs");
 
-var arr = [];
+// var arr = [];
 
-const basePath = "./videos/record/IPCameraLT4/20220209/video/";
+// const basePath = "./videos/record/IPCameraLT4/20220209/video/";
 
-fs.promises
-  .readdir(basePath)
-  .then((files) => {
-    console.log(files);
-    files.forEach((file) => {
-      console.log(file);
-      // fs.stat(basePath + "/" + file, (err, stats) => {
-      //   if (!stats.isDirectory()) {
-      //     arr.push(file);
-      //     return;
-      //   }
-      // });
-    });
-  })
-  .then(() => {
-    console.log(arr);
-  });
+// fs.promises
+//   .readdir(basePath)
+//   .then((files) => {
+//     console.log(files);
+//     files.forEach((file) => {
+//       console.log(file);
+//       // fs.stat(basePath + "/" + file, (err, stats) => {
+//       //   if (!stats.isDirectory()) {
+//       //     arr.push(file);
+//       //     return;
+//       //   }
+//       // });
+//     });
+//   })
+//   .then(() => {
+//     console.log(arr);
+//   });

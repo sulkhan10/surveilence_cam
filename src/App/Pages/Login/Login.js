@@ -14,8 +14,8 @@ const stylesListComent = {
 };
 
 var player = null;
-const client = new W3CWebSocket("ws://192.168.0.250:4000");
-// const client = new W3CWebSocket("ws://127.0.0.1:4000");
+// const client = new W3CWebSocket("ws://192.168.0.250:4000");
+const client = new W3CWebSocket("ws://127.0.0.1:4000");
 // const client = new W3CWebSocket("ws://192.168.0.107:4000");
 class Login extends Component {
   constructor(props) {

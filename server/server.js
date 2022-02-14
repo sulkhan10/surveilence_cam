@@ -7,7 +7,7 @@ var webserviceurl =
 var spawn = require("child_process").spawn;
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
-const { join } = require("path");
+const { join, resolve } = require("path");
 const findRemoveSync = require("find-remove");
 const Recorder = require("node-rtsp-recorder").Recorder;
 const FileHandler = require("rtsp-downloader").FileHandler;
@@ -17,6 +17,7 @@ const SambaClient = require("samba-client");
 const webSocketsServerPort = 4000;
 const webSocketServer = require("websocket").server;
 const http = require("http");
+const { dir } = require("console");
 const server = http.createServer(function (request, response) {
   // console.log("request starting...", new Date());
   const headers = {
@@ -68,6 +69,10 @@ const format1 = "YYYY-MM-DD";
 var date = new Date();
 var DateNow = moment(date).format(format1);
 //console.log(DateNow.replace(/-/g, ""));
+var dateBefor1Day = new Date(DateNow);
+dateBefor1Day.setDate(dateBefor1Day.getDate() - 1);
+var S1day = dateBefor1Day.toISOString().slice(0, 10);
+// console.log(S1day.replace(/-/g, ""));
 
 var stream = null;
 var StremDataLiveView = null;
@@ -249,7 +254,7 @@ axios({
   },
 })
   .then((response) => {
-    console.log("cek data camera List", response.data);
+    // console.log("cek data camera List", response.data);
     if (response.data.status === "OK") {
       if (response.data.records.length > 0) {
         (dataStremCamera = response.data.records),
@@ -370,8 +375,6 @@ function saveCameraList(dataCamera, newCamera) {
         saveCameraList(arrDataCamera, null);
       });
 
-      // clientSMB.mkdir(obj.deviceName.replace(/\s/g, ""));
-
       var rec = new Recorder({
         url: obj.urlRTSP,
         folder: join(__dirname, "/videos/record"),
@@ -383,9 +386,9 @@ function saveCameraList(dataCamera, newCamera) {
     });
 
     setTimeout(function () {
-      console.log("Call fungsi get file from local directory");
+      console.log("====Send to read file from camera video recorded====");
       doReadFileFromLocal(arrDataCamera);
-    }, 69000);
+    }, 30000);
   }
 
   // setTimeout(function () {
@@ -396,64 +399,163 @@ function saveCameraList(dataCamera, newCamera) {
 
 function doReadFileFromLocal(arrDataCamera) {
   const basePath = "./videos/record";
-
   if (arrDataCamera.length > 0) {
-    arrDataCamera.forEach((obj) => {
-      const dirPath = "/" + obj.deviceName.replace(/\s/g, "");
-      const datetime = "/" + DateNow.replace(/-/g, "") + "/video/";
-      clientSMB.mkdir(
-        obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
-      );
-      fs.readdir(basePath + dirPath + datetime, (err, files) => {
-        if (!err) {
-          console.log("file from local", files);
-          return runSendFile(
-            files,
-            obj.deviceName.replace(/\s/g, ""),
-            DateNow.replace(/-/g, "")
-          );
-        }
-      });
-    });
+    const promisesCamera = arrDataCamera.map(
+      (obj, i) =>
+        new Promise((resolve) =>
+          setTimeout(() => {
+            const dirPath = "/" + obj.deviceName.replace(/\s/g, "");
+            const datetime = "/" + S1day.replace(/-/g, "") + "/video/";
+            // clientSMB.mkdir(
+            //   obj.deviceName.replace(/\s/g, "") + "/" + S1day.replace(/-/g, "")
+            // );
+            fs.readdir(basePath + dirPath + datetime, (err, files) => {
+              if (!err) {
+                console.log("Get file from local " + dirPath, files);
+                if (files.length > 0) {
+                  return runSendFile(
+                    files,
+                    obj.deviceName.replace(/\s/g, ""),
+                    S1day.replace(/-/g, "")
+                  );
+                }
+              }
+            });
+            resolve();
+          }, 60000 * i)
+        )
+    );
+    Promise.all(promisesCamera).then(() =>
+      setTimeout(() => {
+        console.log("====Done upload file to NAS====");
+        //retry and remove file
+        removeFileVideo(arrDataCamera);
+      }, 60000)
+    );
   }
 }
 
-async function runSendFile(datafiles, deviceName, dateNow) {
+async function runSendFile(datafiles, deviceName, S1day) {
   var dirPath =
     "/home/cideng87/ServerCamera/videos/record/" +
     deviceName +
     "/" +
-    dateNow +
+    S1day +
     "/video/" +
     ";";
-  var sendPath = "/" + deviceName + "/" + dateNow + ";";
-  if (datafiles.length > 0) {
-    const promisesArr = datafiles.map(async (file, i) => {
-      new Promise((resolve) =>
-        setTimeout(async () => {
-          try {
-            const { stdout, stderr } = await exec(
-              "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
-                " 'cd " +
-                sendPath +
-                " lcd " +
-                dirPath +
-                " put " +
-                file +
-                "'"
-            );
-            console.log("stdout:", stdout);
-            console.log("stderr:", stderr);
-          } catch (e) {
-            console.error(e);
-          }
-          resolve();
-        }, 60000 * i)
-      );
-    });
-    await Promise.all(promisesArr).then(() => console.log("done"));
+  var sendPath = "/" + deviceName + "/" + S1day + ";";
+
+  console.log("path", dirPath);
+  // if (datafiles.length > 0) {
+  //   datafiles.map(async (file, i) => {
+  //     try {
+  //       const { stdout, stderr } = await exec(
+  //         "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+  //           " 'cd " +
+  //           sendPath +
+  //           " lcd " +
+  //           dirPath +
+  //           " put " +
+  //           file +
+  //           "'"
+  //       );
+  //       console.log("stdout:", stdout);
+  //       console.log("stderr:", stderr);
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   });
+  // }
+}
+
+function removeFileVideo(arrDataCamera) {
+  console.log("====Start remove file video record====");
+  const basePath = "./videos/record";
+  if (arrDataCamera.length > 0) {
+    const promisesCamera = arrDataCamera.map(
+      (obj, i) =>
+        new Promise((resolve) =>
+          setTimeout(() => {
+            const dirPath = "/" + obj.deviceName.replace(/\s/g, "");
+            const datetime = "/" + S1day.replace(/-/g, "") + "/video/";
+            var result = findRemoveSync(basePath + dirPath + datetime, {
+              age: { seconds: 30 },
+              extensions: ".mp4",
+            });
+            console.log("delete file", result);
+            resolve();
+          }, 60000 * i)
+        )
+    );
+    Promise.all(promisesCamera).then(() =>
+      setTimeout(() => {
+        console.log("====Done remove file from local====");
+        //retry and remove file
+      }, 60000)
+    );
   }
 }
+
+// function doReadFileFromLocal(arrDataCamera) {
+//   const basePath = "./videos/record";
+
+//   if (arrDataCamera.length > 0) {
+//     arrDataCamera.forEach((obj) => {
+//       const dirPath = "/" + obj.deviceName.replace(/\s/g, "");
+//       const datetime = "/" + DateNow.replace(/-/g, "") + "/video/";
+//       clientSMB.mkdir(
+//         obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
+//       );
+//       fs.readdir(basePath + dirPath + datetime, (err, files) => {
+//         if (!err) {
+//           console.log("file from local", files);
+//           return runSendFile(
+//             files,
+//             obj.deviceName.replace(/\s/g, ""),
+//             DateNow.replace(/-/g, "")
+//           );
+//         }
+//       });
+//     });
+//   }
+// }
+
+// async function runSendFile(datafiles, deviceName, dateNow) {
+//   var dirPath =
+//     "/home/cideng87/ServerCamera/videos/record/" +
+//     deviceName +
+//     "/" +
+//     dateNow +
+//     "/video/" +
+//     ";";
+//   var sendPath = "/" + deviceName + "/" + dateNow + ";";
+//   if (datafiles.length > 0) {
+//     const promisesArr = datafiles.map(async (file, i) => {
+//       new Promise((resolve) =>
+//         setTimeout(async () => {
+//           try {
+//             const { stdout, stderr } = await exec(
+//               "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+//                 " 'cd " +
+//                 sendPath +
+//                 " lcd " +
+//                 dirPath +
+//                 " put " +
+//                 file +
+//                 "'"
+//             );
+//             console.log("stdout:", stdout);
+//             console.log("stderr:", stderr);
+//           } catch (e) {
+//             console.error(e);
+//           }
+//           resolve();
+//         }, 60000 * i)
+//       );
+//     });
+//     await Promise.all(promisesArr).then(() => console.log("done"));
+//   }
+// }
 
 // async function runSendFile(datafiles) {
 //   if (datafiles.length > 0) {

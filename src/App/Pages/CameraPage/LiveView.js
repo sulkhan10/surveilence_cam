@@ -42,9 +42,9 @@ const customStyles = {
 };
 
 var cameraplayer = null;
-// const client = new W3CWebSocket("ws://127.0.0.1:4000");
+const client = new W3CWebSocket("ws://127.0.0.1:4000");
 // const client = new W3CWebSocket("ws://192.168.0.107:8000");
-const client = new W3CWebSocket("ws://192.168.0.250:8000");
+// const client = new W3CWebSocket("ws://192.168.0.250:8000");
 
 class LiveViewPage extends Component {
   constructor(props) {
@@ -55,8 +55,8 @@ class LiveViewPage extends Component {
       // ffmpegIP: "localhost",
       // ffmpegIP: "192.168.0.107",
       // ffmpegIP: "192.168.0.250",
-      // baseUrl: "http://127.0.0.1:4000/",
-      baseUrl: "http://192.168.0.250:4000/",
+      baseUrl: "http://127.0.0.1:4000/",
+      // baseUrl: "http://192.168.0.250:4000/",
       extenstion: "_.m3u8",
       arrayData: [
         { data: "Camera 1" },
