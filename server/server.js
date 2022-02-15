@@ -7,12 +7,12 @@ var webserviceurl =
 var spawn = require("child_process").spawn;
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
-
 const { join, resolve } = require("path");
 const findRemoveSync = require("find-remove");
 const Recorder = require("node-rtsp-recorder").Recorder;
 const FileHandler = require("rtsp-downloader").FileHandler;
 const fs = require("fs");
+const readdir = util.promisify(fs.readdir);
 const fh = new FileHandler();
 const SambaClient = require("samba-client");
 const webSocketsServerPort = 4000;
@@ -413,8 +413,6 @@ function doReadFileFromLocal(arrDataCamera) {
   }
 }
 
-const readdir = util.promisify(fs.readdir);
-
 async function readFileLocal(fullPath, DeviceName) {
   let files;
   try {
@@ -427,7 +425,7 @@ async function readFileLocal(fullPath, DeviceName) {
   } else {
     console.log("Get file from local " + fullPath, files);
     return runSendFile(
-      files,
+      files.slice(0, -1),
       DeviceName.replace(/\s/g, ""),
       DateNow.replace(/-/g, "")
     );
@@ -444,7 +442,7 @@ async function runSendFile(datafiles, deviceName, dateNow) {
     ";";
   var sendPath = "/" + deviceName + "/" + dateNow + ";";
 
-  console.log("cek send file", dirPath);
+  console.log("cek send file" + sendPath, datafiles);
   // if (datafiles.length > 0) {
   //   datafiles.map(async (file, i) => {
   //     try {
