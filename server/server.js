@@ -7,7 +7,7 @@ var webserviceurl =
 var spawn = require("child_process").spawn;
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
-const readdir = util.promisify(fs.readdir);
+
 const { join, resolve } = require("path");
 const findRemoveSync = require("find-remove");
 const Recorder = require("node-rtsp-recorder").Recorder;
@@ -408,10 +408,12 @@ function doReadFileFromLocal(arrDataCamera) {
       //   obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
       // );
       var fullPath = basePath + dirPath + datetime;
-      return await readFileLocal(fullPath, obj.deviceName);
+      return readFileLocal(fullPath, obj.deviceName);
     });
   }
 }
+
+const readdir = util.promisify(fs.readdir);
 
 async function readFileLocal(fullPath, DeviceName) {
   let files;
@@ -421,14 +423,14 @@ async function readFileLocal(fullPath, DeviceName) {
     console.log(err);
   }
   if (files === undefined || files === null || files.length === 0) {
-    console.log("Directory empty.");
+    console.log("Directory empty " + fullPath, files);
   } else {
     console.log("Get file from local " + fullPath, files);
-    // return runSendFile(
-    //   files,
-    //   DeviceName.replace(/\s/g, ""),
-    //   DateNow.replace(/-/g, "")
-    // );
+    return runSendFile(
+      files,
+      DeviceName.replace(/\s/g, ""),
+      DateNow.replace(/-/g, "")
+    );
   }
 }
 
@@ -441,26 +443,28 @@ async function runSendFile(datafiles, deviceName, dateNow) {
     "/video/" +
     ";";
   var sendPath = "/" + deviceName + "/" + dateNow + ";";
-  if (datafiles.length > 0) {
-    datafiles.map(async (file, i) => {
-      try {
-        const { stdout, stderr } = await exec(
-          "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
-            " 'cd " +
-            sendPath +
-            " lcd " +
-            dirPath +
-            " put " +
-            file +
-            "'"
-        );
-        console.log("stdout:", stdout);
-        console.log("stderr:", stderr);
-      } catch (e) {
-        console.error(e);
-      }
-    });
-  }
+
+  console.log("cek send file", dirPath);
+  // if (datafiles.length > 0) {
+  //   datafiles.map(async (file, i) => {
+  //     try {
+  //       const { stdout, stderr } = await exec(
+  //         "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+  //           " 'cd " +
+  //           sendPath +
+  //           " lcd " +
+  //           dirPath +
+  //           " put " +
+  //           file +
+  //           "'"
+  //       );
+  //       console.log("stdout:", stdout);
+  //       console.log("stderr:", stderr);
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   });
+  // }
 }
 
 //================= Upload Minus 1 Hari ====================//
