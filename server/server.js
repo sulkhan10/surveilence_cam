@@ -390,7 +390,7 @@ function saveCameraList(dataCamera, newCamera) {
   setTimeout(function () {
     console.log("====Send to read file from camera video recorded====");
     doReadFileFromLocal(arrDataCamera);
-  }, 69000);
+  }, 120000);
 
   // setTimeout(function () {
   //   console.log("retry data");
@@ -418,7 +418,7 @@ function doReadFileFromLocal(arrDataCamera) {
 
 async function CreateFolderToNAS(deviceName) {
   let createDir;
-  console.log("create folder to nas");
+  console.log("create folder to nas " + deviceName);
   // try {
   //   createDir = await clientSMB.mkdir(
   //     obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
