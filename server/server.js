@@ -13,6 +13,7 @@ const Recorder = require("node-rtsp-recorder").Recorder;
 const FileHandler = require("rtsp-downloader").FileHandler;
 const fs = require("fs");
 const readdir = util.promisify(fs.readdir);
+const unlink = util.promisify(fs.unlink);
 const fh = new FileHandler();
 const SambaClient = require("samba-client");
 const webSocketsServerPort = 4000;
@@ -317,9 +318,9 @@ function saveCameraList(dataCamera, newCamera) {
 
         processHLS.on("close", function (data) {
           console.log("finished " + data);
-          processHLS = null;
-          rec.stopRecording();
-          saveCameraList(arrDataCamera, null);
+          // processHLS = null;
+          // rec.stopRecording();
+          // saveCameraList(arrDataCamera, null);
         });
 
         clientSMB.mkdir(obj.deviceName.replace(/\s/g, ""));
@@ -371,9 +372,9 @@ function saveCameraList(dataCamera, newCamera) {
 
       processHLS.on("close", function (data) {
         console.log("finished " + data);
-        processHLS = null;
-        rec.stopRecording();
-        saveCameraList(arrDataCamera, null);
+        // processHLS = null;
+        // rec.stopRecording();
+        // saveCameraList(arrDataCamera, null);
       });
 
       var rec = new Recorder({
@@ -391,11 +392,6 @@ function saveCameraList(dataCamera, newCamera) {
     console.log("====Send to read file from camera video recorded====");
     doReadFileFromLocal(arrDataCamera);
   }, 120000);
-
-  // setTimeout(function () {
-  //   console.log("retry data");
-  //   saveCameraList(arrDataCamera, null);
-  // }, 1000);
 }
 
 function doReadFileFromLocal(arrDataCamera) {
@@ -419,13 +415,13 @@ function doReadFileFromLocal(arrDataCamera) {
 async function CreateFolderToNAS(deviceName) {
   let createDir;
   console.log("create folder to nas " + deviceName);
-  // try {
-  //   createDir = await clientSMB.mkdir(
-  //     obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
-  //   );
-  // } catch (err) {
-  //   console.log(err);
-  // }
+  try {
+    createDir = await clientSMB.mkdir(
+      obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
+    );
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 async function readFileLocal(fullPath, DeviceName) {
@@ -457,27 +453,42 @@ async function runSendFile(datafiles, deviceName, dateNow) {
     ";";
   var sendPath = "/" + deviceName + "/" + dateNow + ";";
 
-  console.log("cek send file" + sendPath, datafiles);
-  // if (datafiles.length > 0) {
-  //   datafiles.map(async (file, i) => {
-  //     try {
-  //       const { stdout, stderr } = await exec(
-  //         "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
-  //           " 'cd " +
-  //           sendPath +
-  //           " lcd " +
-  //           dirPath +
-  //           " put " +
-  //           file +
-  //           "'"
-  //       );
-  //       console.log("stdout:", stdout);
-  //       console.log("stderr:", stderr);
-  //     } catch (e) {
-  //       console.error(e);
-  //     }
-  //   });
-  // }
+  console.log("cek send file" + dirPath, datafiles);
+  if (datafiles.length > 0) {
+    datafiles.map(async (file, i) => {
+      try {
+        const { stdout, stderr } = await exec(
+          "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+            " 'cd " +
+            sendPath +
+            " lcd " +
+            dirPath +
+            " put " +
+            file +
+            "'"
+        );
+        console.log("stdout:", stdout);
+        console.log("stderr:", stderr);
+        if (!stderr) {
+          return doRemoveFile(dirPath, file);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  }
+}
+
+async function doRemoveFile(dirPath, file) {
+  let removeFile;
+  try {
+    removeFile = await unlink(dirPath + file);
+  } catch (err) {
+    console.log(err);
+  }
+  if (removeFile !== undefined || removeFile !== null || removeFile !== "") {
+    console.log("Done remove file " + dirPath + file);
+  }
 }
 
 //================= Upload Minus 1 Hari ====================//
