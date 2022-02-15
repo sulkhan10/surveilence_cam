@@ -408,9 +408,24 @@ function doReadFileFromLocal(arrDataCamera) {
       //   obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
       // );
       var fullPath = basePath + dirPath + datetime;
-      return readFileLocal(fullPath, obj.deviceName);
+      return (
+        CreateFolderToNAS(obj.deviceName),
+        readFileLocal(fullPath, obj.deviceName)
+      );
     });
   }
+}
+
+async function CreateFolderToNAS(deviceName) {
+  let createDir;
+  console.log("create folder to nas");
+  // try {
+  //   createDir = await clientSMB.mkdir(
+  //     obj.deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
+  //   );
+  // } catch (err) {
+  //   console.log(err);
+  // }
 }
 
 async function readFileLocal(fullPath, DeviceName) {
