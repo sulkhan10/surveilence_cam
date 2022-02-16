@@ -330,7 +330,7 @@ function saveCameraList(dataCamera, newCamera) {
           folder: join(__dirname, "/videos/record"),
           name: obj.deviceName.replace(/\s/g, ""),
           directoryPathFormat: "YYYYMMDD",
-          fileNameFormat: "hhmmss",
+          fileNameFormat: "HHmmss",
         });
         rec.startRecording();
       });
@@ -382,7 +382,7 @@ function saveCameraList(dataCamera, newCamera) {
         folder: join(__dirname, "/videos/record"),
         name: obj.deviceName.replace(/\s/g, ""),
         directoryPathFormat: "YYYYMMDD",
-        fileNameFormat: "hhmmss",
+        fileNameFormat: "HHmmss",
       });
       rec.startRecording();
     });
