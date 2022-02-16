@@ -463,9 +463,10 @@ async function runCmdSendFileSmbClient(datafiles, deviceName, dateNow) {
 
   console.log("cek send file" + dirPath, datafiles);
   if (datafiles.length > 0) {
+    let {stdout, stderr};
     datafiles.map(async (file, i) => {
       try {
-        const { stdout, stderr } = await exec(
+          stdout, stderr = await exec(
           "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
             " 'cd " +
             sendPath +
@@ -477,11 +478,12 @@ async function runCmdSendFileSmbClient(datafiles, deviceName, dateNow) {
         );
         console.log("stdout:", stdout);
         console.log("stderr:", stderr);
-        if (!stderr) {
-          return doRemoveFile(dirPath, file);
-        }
+        
       } catch (e) {
         console.error(e);
+      }
+      if (!stderr) {
+        return doRemoveFile(dirPath, file);
       }
     });
   }
