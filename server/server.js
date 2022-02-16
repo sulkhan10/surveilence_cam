@@ -408,7 +408,7 @@ function CreateFolderNAS(arrDataCamera) {
 
 async function cmdSmbClientMkdirNAS(deviceName) {
   let createDir;
-  console.log("create folder to nas " + deviceName);
+  //console.log("create folder to nas " + deviceName);
   try {
     createDir = await clientSMB.mkdir(
       deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
@@ -417,7 +417,7 @@ async function cmdSmbClientMkdirNAS(deviceName) {
     console.log(err);
   }
 
-  console.log("result cmd mkdr smb client", createDir);
+  //console.log("result cmd mkdr smb client", createDir);
 }
 
 function doReadFileFromLocal(arrDataCamera) {
