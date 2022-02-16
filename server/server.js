@@ -416,6 +416,8 @@ async function cmdSmbClientMkdirNAS(deviceName) {
   } catch (err) {
     console.log(err);
   }
+
+  console.log("result cmd mkdr smb client", createDir);
 }
 
 function doReadFileFromLocal(arrDataCamera) {
