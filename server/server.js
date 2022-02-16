@@ -270,8 +270,7 @@ axios({
 //=======================================================================//
 
 function saveCameraList(dataCamera, newCamera) {
-  // console.log("cek data camera", dataCamera);
-  // console.log("cek new camera", newCamera);
+  console.log("=====START LIVE VIEW CAMERA=====");
   var arrDataCamera = dataCamera === null ? [] : dataCamera;
   if (newCamera !== null) {
     if (dataCamera !== null) {
@@ -393,7 +392,9 @@ function saveCameraList(dataCamera, newCamera) {
   }, 6000);
 
   setTimeout(function () {
-    console.log("====Send to read file from camera video recorded====");
+    console.log(
+      "====START READ FILE CAMERA VIDEO RECORD FROM LOCAL SERVER===="
+    );
     doReadFileFromLocal(arrDataCamera);
   }, 120000);
 }
@@ -408,7 +409,6 @@ function CreateFolderNAS(arrDataCamera) {
 
 async function cmdSmbClientMkdirNAS(deviceName) {
   let createDir;
-  //console.log("create folder to nas " + deviceName);
   try {
     createDir = await clientSMB.mkdir(
       deviceName.replace(/\s/g, "") + "/" + DateNow.replace(/-/g, "")
@@ -416,8 +416,6 @@ async function cmdSmbClientMkdirNAS(deviceName) {
   } catch (err) {
     console.log(err);
   }
-
-  //console.log("result cmd mkdr smb client", createDir);
 }
 
 function doReadFileFromLocal(arrDataCamera) {
@@ -440,9 +438,15 @@ async function readFileLocal(fullPath, DeviceName) {
     console.log(err);
   }
   if (files === undefined || files === null || files.length === 0) {
-    console.log("Directory empty " + fullPath, files);
+    console.log(
+      "===== FILE FROM DIRECTORY EMPTY " + fullPath,
+      files + " ====="
+    );
   } else {
-    console.log("Get file from local " + fullPath, files);
+    console.log(
+      "===== GET FILE FROM DIRECTORY PATH: " + fullPath,
+      files + " ====="
+    );
     return runCmdSendFileSmbClient(
       files.slice(0, -1),
       DeviceName.replace(/\s/g, ""),
@@ -468,7 +472,7 @@ async function runCmdSendFileSmbClient(datafiles, deviceName, dateNow) {
     dateNow +
     "/video/";
 
-  console.log("cek send file" + dirPath, datafiles);
+  console.log("SEND ALL FILE TO NAS STORAGE" + dirPath, datafiles);
   if (datafiles.length > 0) {
     let stdout;
     let stderr;
@@ -505,6 +509,6 @@ async function doRemoveFile(dirPath, file) {
     console.log(err);
   }
   if (removeFile !== undefined || removeFile !== null || removeFile !== "") {
-    console.log("Done remove file " + dirPath + file);
+    console.log("DONE, REMOVE FILE FROM LOCAL: " + dirPath + file);
   }
 }
