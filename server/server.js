@@ -461,29 +461,37 @@ async function runCmdSendFileSmbClient(datafiles, deviceName, dateNow) {
     ";";
   var sendPath = "/" + deviceName + "/" + dateNow + ";";
 
+  var fullPathRemove =
+    "/home/cideng87/ServerCamera/videos/record/" +
+    deviceName +
+    "/" +
+    dateNow +
+    "/video/";
+
   console.log("cek send file" + dirPath, datafiles);
   if (datafiles.length > 0) {
-    let {stdout, stderr};
+    let stdout;
+    let stderr;
     datafiles.map(async (file, i) => {
       try {
-          stdout, stderr = await exec(
-          "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
-            " 'cd " +
-            sendPath +
-            " lcd " +
-            dirPath +
-            " put " +
-            file +
-            "'"
-        );
+        stdout,
+          (stderr = await exec(
+            "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+              " 'cd " +
+              sendPath +
+              " lcd " +
+              dirPath +
+              " put " +
+              file +
+              "'"
+          ));
         console.log("stdout:", stdout);
         console.log("stderr:", stderr);
-        
+        if (stderr.stderr !== "") {
+          return doRemoveFile(fullPathRemove, file);
+        }
       } catch (e) {
         console.error(e);
-      }
-      if (!stderr) {
-        return doRemoveFile(dirPath, file);
       }
     });
   }
