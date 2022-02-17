@@ -102,3 +102,32 @@ smbclient '//192.168.0.117/camstorage' --command 'cd /IPCameraLT4/20220216;  lcd
 smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command 'prompt OFF; recurse ON; cd /IPCameraLT4/20220216;  lcd /home/cideng87/ServerCamera/videos/playback/; mget *'
 
 smbclient '\\server\share' -N -c 'prompt OFF;recurse ON;cd 'path\to\directory\';lcd '~/path/to/download/to/';mget *'`
+
+
+# const util = require("util");
+# const exec = util.promisify(require("child_process").exec);
+
+# var dirPath =
+#   "/home/cideng87/ServerCamera/videos/record/IPCameraLT4/20220208/video/" + ";";
+# var sendPath = "/IPCameraLT4/20220208" + ";";
+# var sendFile = "023518.mp4";
+
+# async function runSendFile() {
+#   try {
+#    const { stdout, stderr } = await exec(
+#       "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+#         " 'cd " +
+#         sendPath +
+#         " lcd " +
+#         dirPath +
+#         " put " +
+#         sendFile +
+#         "'"
+#     );
+#     console.log("stdout:", stdout);
+#     console.log("stderr:", stderr);
+#   } catch (e) {
+#     console.error(e);
+#   }
+# }
+# runSendFile();
