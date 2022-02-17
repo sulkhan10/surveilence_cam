@@ -93,3 +93,12 @@ rtsp://SIMCAM:DX8PHX@192.168.0.200/live
 #   const { stdout, stderr } = await exec(
 #        "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command 'cd /HomeTazik/20220203; lcd /home/cideng87/ServerCamera/videos/; put filepenting.text'"
 #      );
+
+
+smbclient '//192.168.0.117/camstorage' --command 'cd /IPCameraLT4/20220217;  lcd /home/cideng87/ServerCamera/videos/; get 102429.mp4'
+
+smbclient '//192.168.0.117/camstorage' --command 'cd /IPCameraLT4/20220216;  lcd /home/cideng87/ServerCamera/videos/; mget *'
+
+smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command 'prompt OFF; recurse ON; cd /IPCameraLT4/20220216;  lcd /home/cideng87/ServerCamera/videos/playback/; mget *'
+
+smbclient '\\server\share' -N -c 'prompt OFF;recurse ON;cd 'path\to\directory\';lcd '~/path/to/download/to/';mget *'`
