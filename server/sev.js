@@ -113,21 +113,17 @@
 //clientSMB.mkdir('SimhomeTazik/20220206')
 //console.log(`created directory ${clientSMB.address}`);
 
-// const userEmailArray = ["one"];
-// const promises = userEmailArray.map(
-//   (userEmail, i) =>
-//     new Promise((resolve) =>
-//       // setTimeout(() => {
-//       //   console.log(userEmail);
-//       //   resolve();
-//       // }, 1000 * userEmailArray.length - 1000 * i)
-//       setTimeout(() => {
-//         console.log(userEmail);
-//         resolve();
-//       }, 1000 * i)
-//     )
-// );
-// Promise.all(promises).then(() => console.log("done"));
+const userEmailArray = ["one", "two"];
+const promises = userEmailArray.map(
+  (userEmail, i) =>
+    new Promise((resolve) =>
+      setTimeout(() => {
+        console.log(userEmail);
+        resolve();
+      }, 1000 * i)
+    )
+);
+Promise.all(promises).then(() => console.log("done"));
 
 // const fs = require("fs");
 
