@@ -8,6 +8,8 @@
     "serve": "nodemon server.js"
   },
   "dependencies": {
+    "@network-utils/arp-lookup": "^2.0.1",
+    "address": "^1.2.0",
     "axios": "^0.24.0",
     "buffer": "^6.0.3",
     "child_process": "^1.0.2",
