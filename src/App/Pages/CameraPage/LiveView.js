@@ -708,7 +708,7 @@ class LiveViewPage extends Component {
                           textTransform: "capitalize",
                         }}
                       >
-                        Reset
+                        Refresh
                       </Typography>
                     </Button>
                   </div>

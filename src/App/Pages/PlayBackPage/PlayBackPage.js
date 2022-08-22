@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { apiGroupList, apiViewList } from "../../Service/api";
 import { Input } from "reactstrap";
-import moment from "moment";
+// import moment from "moment";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
@@ -103,12 +103,20 @@ class PlayBackPage extends Component {
     this.setState({
       listViewCamera: selectOptionGroup.info,
       selectedCamera: 0,
+      selectedDeviceCamera: "",
     });
   };
 
-  selectedCamera = (value) => {
+  selectedCamera = (obj) => {
+    console.log(obj);
+    let arr = [];
+    arr.push(obj);
+
+    console.log(arr);
+
     this.setState({
-      selectedCamera: value,
+      selectedCamera: obj.deviceId,
+      selectedDeviceCamera: arr,
     });
   };
 
@@ -130,7 +138,7 @@ class PlayBackPage extends Component {
                     style={{
                       backgroundColor: "#036b50",
                     }}
-                    onClick={() => this.selectedCamera(obj.deviceId)}
+                    onClick={() => this.selectedCamera(obj)}
                   >
                     <ListItemIcon>
                       <Videocam style={{ color: "#fff" }} />
@@ -146,10 +154,7 @@ class PlayBackPage extends Component {
             } else {
               return (
                 <>
-                  <ListItem
-                    button
-                    onClick={() => this.selectedCamera(obj.deviceId)}
-                  >
+                  <ListItem button onClick={() => this.selectedCamera(obj)}>
                     <ListItemIcon>
                       <Videocam />
                     </ListItemIcon>
@@ -161,6 +166,25 @@ class PlayBackPage extends Component {
             }
           })}
         </>
+      );
+    } else {
+      return (
+        <div style={{ textAlign: "center" }}>
+          <Typography
+            component="span"
+            variant="h1"
+            style={
+              (stylesListComent.inline,
+              {
+                fontSize: 18,
+                color: "#9e9e9e",
+                fontWeight: "bold",
+              })
+            }
+          >
+            Not Available
+          </Typography>
+        </div>
       );
     }
   };
@@ -211,6 +235,22 @@ class PlayBackPage extends Component {
                     height: "75vh",
                   }}
                 >
+                  <div className="page-header">
+                    <Typography
+                      component="span"
+                      variant="h2"
+                      style={{
+                        fontSize: 16,
+                        color: "#006432",
+                        fontWeight: "bold",
+                        textTransform: "capitalize",
+                        float: "left",
+                      }}
+                    >
+                      Group
+                    </Typography>
+                    <span className="dash">&nbsp;&nbsp;</span>
+                  </div>
                   <div style={{ width: "100%", marginBottom: "10px" }}>
                     <Select
                       styles={customStyles}

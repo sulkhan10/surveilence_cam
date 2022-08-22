@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import axios from "axios";
-import { serverUrl } from "../../../config.js";
+// import axios from "axios";
+// import { serverUrl } from "../../../config.js";
 import "./Menu.style.css";
 import { activeLanguage } from "../../../config";
 import { getLanguage } from "../../../languages";
@@ -22,6 +22,7 @@ import {
   Category,
   SettingsApplications,
   PeopleAlt,
+  BrandingWatermark,
 } from "@mui/icons-material";
 import { Typography } from "@mui/material";
 const stylesListComent = {
@@ -100,11 +101,16 @@ class Menu extends Component {
         childs: [
           {
             id: 20,
-            label: "Camera",
-            to: "/panel/devicecamera",
+            label: "Brand",
+            to: "/panel/brand-camera",
           },
           {
             id: 21,
+            label: "Device",
+            to: "/panel/device-camera",
+          },
+          {
+            id: 22,
             label: "Group",
             to: "/panel/group",
           },
@@ -127,11 +133,11 @@ class Menu extends Component {
             label: "Playback",
             to: "/panel/playback",
           },
-          {
-            id: 33,
-            label: "Setting",
-            to: "",
-          },
+          // {
+          //   id: 33,
+          //   label: "Setting",
+          //   to: "",
+          // },
         ],
       },
 
@@ -525,7 +531,7 @@ class Menu extends Component {
   };
 
   renderSubMenuIcon = (label) => {
-    if (label === "Camera") {
+    if (label === "Device") {
       return <VideoCall />;
     } else if (label === "Group") {
       return <AllInbox />;
@@ -537,6 +543,8 @@ class Menu extends Component {
       return <Settings />;
     } else if (label === "Admin") {
       return <PeopleAlt />;
+    } else if (label === "Brand") {
+      return <BrandingWatermark />;
     }
   };
 

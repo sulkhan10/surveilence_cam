@@ -4,7 +4,7 @@ const { toMAC, toIP } = require("@network-utils/arp-lookup");
 
 async function getIpAddresFromMacAddres() {
   try {
-    const MAC = "00:AF:87:7C:23:1E";
+    const MAC = "48:98:CA:A9:C0:8A";
     const response = await toIP(MAC);
     return response;
   } catch (error) {
@@ -24,7 +24,7 @@ async function getMacAddresFromIpAddres() {
 
 getIpAddresFromMacAddres()
   .then((res) => {
-    console.log(res);
+    console.log("IP Address: ", res);
   })
   .catch((err) => {
     console.log(err);
@@ -32,7 +32,7 @@ getIpAddresFromMacAddres()
 
 getMacAddresFromIpAddres()
   .then((res) => {
-    console.log(res);
+    console.log("MAC Address: ", res);
   })
   .catch((err) => {
     console.log(err);

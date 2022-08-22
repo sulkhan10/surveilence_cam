@@ -5,7 +5,8 @@
   "author": "Mael T.",
   "license": "MIT",
   "scripts": {
-    "serve": "nodemon server.js"
+    "serve": "nodemon server.js",
+    "start": "nodemon server.js"
   },
   "dependencies": {
     "@network-utils/arp-lookup": "^2.0.1",

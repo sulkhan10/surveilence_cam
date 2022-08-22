@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Router, Route, Switch, Redirect } from "react-router-dom";
+import { Router, Route, Switch } from "react-router-dom";
 import createBrowserHistory from "history/createBrowserHistory";
 import axios from "axios";
 import { serverUrl } from "../config";
@@ -21,6 +21,7 @@ import DeviceCameraPage from "./Pages/Devices/DeviceCamera";
 import AddDevicesPage from "./Pages/Devices/AddDevices";
 import EditDevicesPage from "./Pages/Devices/EditDevices";
 import LiveViewPage from "./Pages/CameraPage/LiveView";
+import BrandDevicePage from "./Pages/Brand/Index";
 
 class Default extends Component {
   constructor(props) {
@@ -183,6 +184,17 @@ class Default extends Component {
           <div className="content-container">
             <Switch>
               <Route
+                path={`SmartSurveillanceSystem/panel/dashboard`}
+                render={(props) => (
+                  <Dashboard
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+
+              <Route
                 path={`${match.path}/dashboard`}
                 render={(props) => (
                   <Dashboard
@@ -267,7 +279,7 @@ class Default extends Component {
               />
 
               <Route
-                path={`${match.path}/devicecamera`}
+                path={`${match.path}/device-camera`}
                 render={(props) => (
                   <DeviceCameraPage
                     {...props}
@@ -288,7 +300,7 @@ class Default extends Component {
                 )}
               />
               <Route
-                path={`${match.path}/addDevices`}
+                path={`${match.path}/add-device`}
                 render={(props) => (
                   <AddDevicesPage
                     {...props}
@@ -299,7 +311,7 @@ class Default extends Component {
               />
 
               <Route
-                path={`${match.path}/editDevice/:deviceId`}
+                path={`${match.path}/edit-device/:deviceId`}
                 render={(props) => (
                   <EditDevicesPage
                     {...props}
@@ -313,6 +325,16 @@ class Default extends Component {
                 path={`${match.path}/liveView`}
                 render={(props) => (
                   <LiveViewPage
+                    {...props}
+                    doLoading={this.doLoading}
+                    community={this.state.community}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.path}/brand-camera`}
+                render={(props) => (
+                  <BrandDevicePage
                     {...props}
                     doLoading={this.doLoading}
                     community={this.state.community}

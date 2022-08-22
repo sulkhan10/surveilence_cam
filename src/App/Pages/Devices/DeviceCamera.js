@@ -208,7 +208,7 @@ class DeviceCameraPage extends Component {
   };
 
   doRowEdit = (row) => {
-    this.props.history.push("/panel/editDevice/" + row.deviceId);
+    this.props.history.push("/panel/edit-device/" + row.deviceId);
   };
 
   doRowDelete = (row) => {
@@ -231,7 +231,7 @@ class DeviceCameraPage extends Component {
   };
 
   addNew = () => {
-    this.props.history.push("/panel/addDevices");
+    this.props.history.push("/panel/add-device");
   };
 
   reset = () => {
@@ -297,7 +297,7 @@ class DeviceCameraPage extends Component {
                     })
                   }
                 >
-                  Camera
+                  Device Camera
                 </Typography>
                 <br></br>
                 <div className="contentDate">
@@ -318,7 +318,7 @@ class DeviceCameraPage extends Component {
                           textTransform: "capitalize",
                         }}
                       >
-                        Reset
+                        Refresh
                       </Typography>
                     </Button>
                   </div>

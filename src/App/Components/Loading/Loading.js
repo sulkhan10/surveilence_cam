@@ -1,28 +1,27 @@
-import React, { Component } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { Component } from "react";
 
-import './Loading.style.css';
+import "./Loading.style.css";
 
 class Loading extends Component {
-    constructor(props) {
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state={
-            isShow: props.isShow 
-        }
-        this.elRef = null;
-    }
+    this.state = {
+      isShow: props.isShow,
+    };
+    this.elRef = null;
+  }
 
-    componentWillReceiveProps(props){
-        this.setState({isShow:props.isShow});
-    }
-    componentDidMount(){
-        //document.addEventListener('click', this.eventDocumentClick)
-    }
-    componentWillUnmount() {
-        //document.removeEventListener('click', this.eventDocumentClick);
-    }
-    /*eventDocumentClick=(event)=>{
+  componentWillReceiveProps(props) {
+    this.setState({ isShow: props.isShow });
+  }
+  componentDidMount() {
+    //document.addEventListener('click', this.eventDocumentClick)
+  }
+  componentWillUnmount() {
+    //document.removeEventListener('click', this.eventDocumentClick);
+  }
+  /*eventDocumentClick=(event)=>{
         if(this.state.isOptionsShow){
             if(this.state.justOpen)
                 this.setState({justOpen:false});
@@ -31,21 +30,18 @@ class Loading extends Component {
         }
     }*/
 
-    render() {
-        
-        if(this.state.isShow)
-        {
-            return (
-                <div className="loading-container">
-                    <div className="gif-container">
-                        <img src={require('../../../Assets/Images/loading.gif')} />
-                    </div>
-                </div>
-            )
-        }else{
-            return (<div style={{display:'none'}}></div>)
-        }
-        
+  render() {
+    if (this.state.isShow) {
+      return (
+        <div className="loading-container">
+          <div className="gif-container">
+            <img src={require("../../../Assets/Images/loading.gif")} alt="" />
+          </div>
+        </div>
+      );
+    } else {
+      return <div style={{ display: "none" }}></div>;
     }
+  }
 }
 export default Loading;

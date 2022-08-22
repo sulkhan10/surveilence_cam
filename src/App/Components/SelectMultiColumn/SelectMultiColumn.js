@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "./SelectMultiColumn.style.css";
@@ -50,7 +49,7 @@ class SelectMultiProfile extends Component {
       for (let i = 0; i < data.length; i++) {
         let col = valueColumn !== "" ? valueColumn : 0;
 
-        if (data[i][col] == value) {
+        if (data[i][col] === value) {
           showValue = data[i][showColumn === "" ? col : showColumn];
           break;
         }

@@ -29,10 +29,10 @@ class Dashboard extends Component {
   };
 
   render() {
-    const communityname =
-      this.state.community.communityid === 0
-        ? ""
-        : this.state.community.communityname;
+    // const communityname =
+    //   this.state.community.communityid === 0
+    //     ? ""
+    //     : this.state.community.communityname;
     return (
       <div>
         <div className="page-header">

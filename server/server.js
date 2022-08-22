@@ -20,6 +20,7 @@ const webSocketsServerPort = 4000;
 const webSocketServer = require("websocket").server;
 const http = require("http");
 const { dir } = require("console");
+const { toMAC, toIP } = require("@network-utils/arp-lookup");
 const server = http.createServer(function (request, response) {
   // console.log("request starting...", new Date());
   const headers = {
@@ -123,6 +124,8 @@ wsServer.on("request", function (request) {
       StopCameraLive(conn, params);
     } else if (method === "addStreaming") {
       saveCameraList(dataStremCamera, params.dataStream);
+    } else if (method === "getIpAddressFromMacAddress") {
+      doGetIpAddresFromMacAddres(conn, params);
     }
   });
   // user disconnected
@@ -136,6 +139,35 @@ function startDiscovery(conn) {
   let res = { id: "startDiscovery", result: "cek websocket server start" };
   conn.send(JSON.stringify(res));
   console.log("cek startDiscovery", res);
+}
+
+function doGetIpAddresFromMacAddres(conn, params) {
+  console.log("get state mac address:", params);
+  getIpAddresFromMacAddres(params.mac_address)
+    .then((response) => {
+      console.log(response);
+      if (response !== null || response !== undefined) {
+        let res = {
+          id: "result_ip_address",
+          result: response,
+        };
+        conn.send(JSON.stringify(res));
+      } else {
+        let res = {
+          id: "result_ip_address",
+          result: "Null",
+        };
+        conn.send(JSON.stringify(res));
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      let res = {
+        id: "result_ip_address",
+        result: "Error",
+      };
+      conn.send(JSON.stringify(res));
+    });
 }
 
 function StreamCamera(conn, params) {
@@ -269,6 +301,16 @@ axios({
   });
 //=======================================================================//
 
+async function getIpAddresFromMacAddres(mac_address) {
+  try {
+    const MAC = mac_address;
+    const response = await toIP(MAC);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
 function saveCameraList(dataCamera, newCamera) {
   console.log("=====START LIVE VIEW CAMERA=====");
   var arrDataCamera = dataCamera === null ? [] : dataCamera;
@@ -387,16 +429,16 @@ function saveCameraList(dataCamera, newCamera) {
     });
   }
 
-  setTimeout(function () {
-    CreateFolderNAS(arrDataCamera);
-  }, 6000);
+  // setTimeout(function () {
+  //   CreateFolderNAS(arrDataCamera);
+  // }, 6000);
 
-  setTimeout(function () {
-    console.log(
-      "====START READ FILE CAMERA VIDEO RECORD FROM LOCAL SERVER===="
-    );
-    doReadFileFromLocal(arrDataCamera);
-  }, 120000);
+  // setTimeout(function () {
+  //   console.log(
+  //     "====START READ FILE CAMERA VIDEO RECORD FROM LOCAL SERVER===="
+  //   );
+  //   doReadFileFromLocal(arrDataCamera);
+  // }, 120000);
 }
 
 function CreateFolderNAS(arrDataCamera) {

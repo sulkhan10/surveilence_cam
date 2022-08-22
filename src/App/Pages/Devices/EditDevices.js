@@ -1,17 +1,23 @@
 import React, { Component } from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import { apiCameraAddUpdate, apiCameraId } from "../../Service/api";
+import {
+  apiCameraAddUpdate,
+  apiCameraId,
+  apiBrandDevice_List,
+} from "../../Service/api";
 import JSMpeg from "@cycjimmy/jsmpeg-player";
 import { Input } from "reactstrap";
 import SelectMultiColumn from "../../Components/SelectMultiColumn/SelectMultiColumn";
 import "./Devices.style.css";
+import Select from "react-select";
 import {
   ArrowBackIos,
   Cancel,
   Save,
-  WarningAmber,
+  Dns,
+  // WarningAmber,
   Close,
-  Sync,
+  // Sync,
   Videocam,
 } from "@mui/icons-material";
 import {
@@ -22,7 +28,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  DialogTitle,
+  // DialogTitle,
   Button,
   Stack,
   Alert,
@@ -67,6 +73,13 @@ class EditDevicesPage extends Component {
         { value: "1920x1080", text: "1920x1080 (Full HD)" },
         { value: "2560x1440", text: "1280x720 (Quad HD)" },
       ],
+      optionAddress: [
+        { value: "IP Address", label: "IP Address" },
+        { value: "Mac Address", label: "Mac Address" },
+      ],
+      optionBrand: [],
+      selectedBrandId: null,
+      selectedOptionAddress: null,
       outputFileFormat: "mpegts",
       videoCodec: "mpeg1video",
       totalDeviceScan: 0,
@@ -78,6 +91,7 @@ class EditDevicesPage extends Component {
       rowDetail: [],
       device_connected: false,
       player: null,
+      mac_address: "",
     };
   }
 
@@ -90,7 +104,17 @@ class EditDevicesPage extends Component {
         this.props.doLoading();
         let dataresponse = response.data;
         if (dataresponse.status === "OK") {
+          let optionTypeAddress = this.state.optionAddress.filter(
+            (obj) => obj.value === dataresponse.record.type_address
+          );
+
+          console.log(optionTypeAddress);
+
+          this.doLoadBrandDevices(dataresponse.record.brand_device);
           this.setState({
+            selectedOptionAddress:
+              optionTypeAddress.length > 0 ? optionTypeAddress[0] : null,
+            mac_address: dataresponse.record.mac_address,
             deviceId: dataresponse.record.deviceId,
             deviceName: dataresponse.record.deviceName,
             IpAddress: dataresponse.record.IpAddress,
@@ -111,9 +135,37 @@ class EditDevicesPage extends Component {
       });
   };
 
+  doLoadBrandDevices = (brand_device) => {
+    apiBrandDevice_List()
+      .then((res) => {
+        let data = res.data;
+        if (data.status === "ok") {
+          var temp = this.state.tableData;
+          temp = data.records;
+          for (var i = 0; i < temp.length; i++) {
+            temp[i].value = temp[i].brand_name;
+            temp[i].label = temp[i].brand_name;
+          }
+
+          let brand = temp.filter((obj) => obj.value === brand_device);
+
+          this.setState({
+            optionBrand: temp,
+            selectedBrandId: brand.length > 0 ? brand[0] : null,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   doSubmitDevice = () => {
     let params = {
       deviceId: this.state.deviceId,
+      brand_device: this.state.selectedBrandId.value,
+      type_address: this.state.selectedOptionAddress.value,
+      mac_address: this.state.mac_address,
       deviceName: this.state.deviceName,
       username: this.state.username,
       password: this.state.password,
@@ -165,6 +217,8 @@ class EditDevicesPage extends Component {
         console.log("data from server", dataFromServer);
       } else if (id === "startStreaming") {
         this.streamCamera(dataFromServer);
+      } else if (id === "result_ip_address") {
+        this.getResultIpAddress(dataFromServer);
       }
       // else if (id === "stopJsmpeg") {
       //   this.destroyCamera(dataFromServer);
@@ -210,6 +264,14 @@ class EditDevicesPage extends Component {
     });
   };
 
+  getResultIpAddress = (data) => {
+    if (data.result !== "Null" || data.result !== "Error") {
+      this.setState({
+        IpAddress: data.result,
+      });
+    }
+  };
+
   connectCamera = () => {
     this.sendRequest("connect", {
       url_rtsp: this.state.testingUrlRtsp,
@@ -251,6 +313,16 @@ class EditDevicesPage extends Component {
     );
   };
 
+  handleChangeOptionAddress = (selectedOptionAddress) => {
+    this.setState({ selectedOptionAddress });
+  };
+
+  handleChangeOptionBrand = (selectedBrandId) => {
+    this.setState({
+      selectedBrandId,
+    });
+  };
+
   changeVideoBitRate = (videoBitRate) => {
     this.setState({ videoBitRate: videoBitRate });
   };
@@ -264,9 +336,25 @@ class EditDevicesPage extends Component {
   };
 
   checkData = () => {
-    const { deviceName, IpAddress, urlRTSP } = this.state;
+    const {
+      selectedBrandId,
+      selectedOptionAddress,
+      deviceName,
+      IpAddress,
+      urlRTSP,
+    } = this.state;
 
-    if (deviceName === "") {
+    if (selectedBrandId === null) {
+      this.setState({
+        messageError: "Select brand device.",
+        setOpenValidation: true,
+      });
+    } else if (selectedOptionAddress === null) {
+      this.setState({
+        messageError: "Select type address.",
+        setOpenValidation: true,
+      });
+    } else if (deviceName === "") {
       this.setState({
         messageError: "Enter device name.",
         setOpenValidation: true,
@@ -301,14 +389,14 @@ class EditDevicesPage extends Component {
         aria-describedby="alert-dialog-description"
         titleStyle={{ textAlign: "center" }}
       >
-        <DialogTitle
+        {/* <DialogTitle
           id="alert-dialog-title"
           style={{ backgroundColor: "#006432", paddingBottom: 35 }}
         >
           <div style={{ position: "absolute", right: "42%", top: "5%" }}>
             <WarningAmber style={{ color: "#fff", width: 40, height: 40 }} />
           </div>
-        </DialogTitle>
+        </DialogTitle> */}
         <DialogContent style={{ minWidth: 250, width: 300, marginTop: 10 }}>
           <DialogContentText id="alert-dialog-description">
             <Typography
@@ -345,7 +433,7 @@ class EditDevicesPage extends Component {
 
   renderSuccess = () => {
     if (this.state.openSuccess === true) {
-      setTimeout(() => this.props.history.push("/panel/devicecamera"), 1000);
+      setTimeout(() => this.props.history.push("/panel/device-camera"), 1000);
 
       return (
         <div style={{ margin: 10 }}>
@@ -358,7 +446,9 @@ class EditDevicesPage extends Component {
                   aria-label="close"
                   color="inherit"
                   size="small"
-                  onClick={() => this.props.history.push("/panel/devicecamera")}
+                  onClick={() =>
+                    this.props.history.push("/panel/device-camera")
+                  }
                 >
                   <Close fontSize="inherit" />
                 </IconButton>
@@ -384,7 +474,7 @@ class EditDevicesPage extends Component {
               backgroundColor: "#006432",
             }}
             startIcon={<ArrowBackIos />}
-            onClick={() => this.props.history.push("/panel/devicecamera")}
+            onClick={() => this.props.history.push("/panel/device-camera")}
           >
             <Typography
               variant="button"
@@ -409,7 +499,7 @@ class EditDevicesPage extends Component {
               float: "right",
             }}
           >
-            Add Camera
+            Edit Device
           </Typography>
           <span className="dash">&nbsp;&nbsp;</span>
         </div>
@@ -417,6 +507,151 @@ class EditDevicesPage extends Component {
           <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
+                <Grid container spacing={1}>
+                  <Grid item xs={12}>
+                    <Typography
+                      component="span"
+                      variant="subtitle1"
+                      style={{
+                        // fontSize: 16,
+                        float: "left",
+                        marginTop: 6,
+                        color: "#006432",
+                        fontWeight: "bold",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      Brand
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Select
+                      classNamePrefix="select"
+                      placeholder="Select brand device"
+                      value={this.state.selectedBrandId}
+                      onChange={this.handleChangeOptionBrand}
+                      options={this.state.optionBrand}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={1}>
+                  <Grid item xs={12}>
+                    <Typography
+                      component="span"
+                      variant="subtitle1"
+                      style={{
+                        // fontSize: 16,
+                        float: "left",
+                        marginTop: 6,
+                        color: "#006432",
+                        fontWeight: "bold",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      Type Address
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Select
+                      classNamePrefix="select"
+                      placeholder="Select type address"
+                      value={this.state.selectedOptionAddress}
+                      onChange={this.handleChangeOptionAddress}
+                      options={this.state.optionAddress}
+                    />
+                  </Grid>
+                </Grid>
+
+                {this.state.selectedOptionAddress !== null ? (
+                  this.state.selectedOptionAddress.value === "Mac Address" ? (
+                    <Grid container spacing={1}>
+                      <Grid item xs={12}>
+                        <Typography
+                          component="span"
+                          variant="subtitle1"
+                          style={{
+                            // fontSize: 16,
+                            float: "left",
+                            marginTop: 6,
+                            color: "#006432",
+                            fontWeight: "bold",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          Mac Address
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={8}>
+                        <Input
+                          autoComplete="off"
+                          type="text"
+                          name="mac_address"
+                          id="mac_address"
+                          placeholder="Enter mac address"
+                          value={this.state.mac_address}
+                          onChange={(event) =>
+                            this.setState({ mac_address: event.target.value })
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={4} style={{ textAlign: "right" }}>
+                        <Button
+                          variant="contained"
+                          size="medium"
+                          style={{
+                            backgroundColor: "#388e3c",
+                          }}
+                          startIcon={<Dns />}
+                          onClick={() => this.pressGenerateIpAddress()}
+                        >
+                          <Typography
+                            variant="button"
+                            style={{
+                              fontSize: 12,
+                              color: "#fff",
+                              textTransform: "capitalize",
+                              marginLeft: -6,
+                            }}
+                          >
+                            Generate IP Address
+                          </Typography>
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  ) : null
+                ) : null}
+
+                <Grid item xs={12}>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    style={{
+                      // fontSize: 16,
+                      float: "left",
+                      marginTop: 6,
+                      color: "#006432",
+                      fontWeight: "bold",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    IP Address
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Input
+                    autoComplete="off"
+                    type="text"
+                    name="IpAddress"
+                    id="IpAddress"
+                    placeholder="Enter IP address device"
+                    value={this.state.IpAddress}
+                    onChange={(event) =>
+                      this.setState({ IpAddress: event.target.value })
+                    }
+                  />
+                </Grid>
+
                 <Grid item xs={12}>
                   <Typography
                     component="span"
@@ -503,36 +738,6 @@ class EditDevicesPage extends Component {
                     value={this.state.password}
                     onChange={(event) =>
                       this.setState({ password: event.target.value })
-                    }
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Typography
-                    component="span"
-                    variant="subtitle1"
-                    style={{
-                      // fontSize: 16,
-                      float: "left",
-                      marginTop: 6,
-                      color: "#006432",
-                      fontWeight: "bold",
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    IP Address
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Input
-                    autoComplete="off"
-                    type="text"
-                    name="IpAddress"
-                    id="IpAddress"
-                    placeholder="Enter IP address device"
-                    value={this.state.IpAddress}
-                    onChange={(event) =>
-                      this.setState({ IpAddress: event.target.value })
                     }
                   />
                 </Grid>
@@ -769,7 +974,7 @@ class EditDevicesPage extends Component {
                       }}
                       startIcon={<Sync />}
                       onClick={() =>
-                        this.props.history.push("/panel/devicecamera")
+                        this.props.history.push("/panel/device-camera")
                       }
                     >
                       <Typography
@@ -815,7 +1020,7 @@ class EditDevicesPage extends Component {
                 backgroundColor: "#d0021b",
               }}
               startIcon={<Cancel />}
-              onClick={() => this.props.history.push("/panel/devicecamera")}
+              onClick={() => this.props.history.push("/panel/device-camera")}
             >
               <Typography
                 variant="button"

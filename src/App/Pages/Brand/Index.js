@@ -1,12 +1,14 @@
 import React, { Component } from "react";
-import { apiCameraSelect } from "../../Service/api";
-import axios from "axios";
+import {
+  apiBrandDevice_List,
+  apiBrandDevice_insert_update,
+  apiBrandDevice_delete,
+} from "../../Service/api";
 import ReactTable from "react-table";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
-import { serverUrl } from "../../../config.js";
 import { activeLanguage } from "../../../config";
 import { getLanguage } from "../../../languages";
 import SelectMultiColumn from "../../Components/SelectMultiColumn/SelectMultiColumn";
@@ -26,7 +28,7 @@ import {
   Stack,
   Alert,
 } from "@mui/material";
-import { Input, FormGroup, Label } from "reactstrap";
+import { Input } from "reactstrap";
 import {
   Refresh,
   Edit,
@@ -37,7 +39,7 @@ import {
   Cancel,
   Check,
 } from "@mui/icons-material";
-import Select from "react-select";
+// import Select from "react-select";
 const stylesListComent = {
   inline: {
     display: "inline",
@@ -62,7 +64,7 @@ const stylesDialog = {
   },
 };
 
-class GroupListPage extends Component {
+class BrandDevicePage extends Component {
   constructor(props) {
     super(props);
     this.reactTable = React.createRef();
@@ -72,10 +74,10 @@ class GroupListPage extends Component {
       tableData: [],
       tableDisplay: [],
       filter: "",
-      groupId: 0,
-      groupName: "",
-      isAvailable: 0,
-      isAvailableShow: [
+      brand_id: 0,
+      brand_name: "",
+      is_available: 0,
+      is_availableShow: [
         { value: 0, text: "HIDDEN" },
         { value: 1, text: "SHOW" },
       ],
@@ -101,20 +103,20 @@ class GroupListPage extends Component {
         width: 100,
       },
       {
-        Header: "Group Name",
+        Header: "Brand Name",
         headerStyle: { fontWeight: "bold" },
-        accessor: "groupName",
+        accessor: "brand_name",
         style: { textAlign: "center" },
       },
       {
         Header: "Is Available",
         headerStyle: { fontWeight: "bold" },
-        accessor: "isAvailable",
+        accessor: "is_available",
         style: { textAlign: "center" },
       },
 
       {
-        Header: this.language.columnaction,
+        Header: "Action",
         headerStyle: { fontWeight: "bold" },
         accessor: "",
         style: { textAlign: "center" },
@@ -138,7 +140,7 @@ class GroupListPage extends Component {
                   textTransform: "capitalize",
                 }}
               >
-                {this.globallang.edit}
+                Edit
               </Typography>
             </Button>
             &nbsp;
@@ -159,7 +161,7 @@ class GroupListPage extends Component {
                   textTransform: "capitalize",
                 }}
               >
-                {this.globallang.delete}
+                Delete
               </Typography>
             </Button>
           </div>
@@ -168,37 +170,104 @@ class GroupListPage extends Component {
     ];
   }
 
-  handleChangeOptionDevice = (selectedOptionDevice) => {
-    // console.log(selectedOptionDevice);
-    this.setState({ selectedOptionDevice });
+  componentDidMount = () => {
+    this.doLoadBrandDevices();
   };
 
-  changeSelectIsavailable = (isAvailable) => {
-    this.setState({ isAvailable: isAvailable });
+  doLoadBrandDevices = () => {
+    this.props.doLoading();
+    apiBrandDevice_List()
+      .then((res) => {
+        this.props.doLoading();
+        let data = res.data;
+        if (data.status === "ok") {
+          var temp = this.state.tableData;
+          temp = data.records;
+          for (var i = 0; i < temp.length; i++) {
+            temp[i].id = i + 1;
+            temp[i].is_available =
+              temp[i].is_available === 0 ? "HIDDEN" : "SHOW";
+          }
+          this.setState({ tableData: temp });
+        }
+      })
+      .catch((err) => {
+        this.props.doLoading();
+        console.log(err);
+      });
+  };
+
+  deleteBrand = (brand_id) => {
+    this.props.doLoading();
+    apiBrandDevice_delete(brand_id)
+      .then((res) => {
+        this.props.doLoading();
+        let data = res.data;
+        if (data.status === "OK") {
+          this.setState({
+            openSuccess: true,
+            openSuccessText: "Data deleted successfully",
+          });
+        }
+      })
+      .catch((err) => {
+        this.props.doLoading();
+        console.log(err);
+      });
+  };
+
+  onSubmit = () => {
+    let params = {
+      brand_id: this.state.brand_id,
+      brand_name: this.state.brand_name,
+      is_available: this.state.is_available,
+    };
+    this.props.doLoading();
+
+    apiBrandDevice_insert_update(params)
+      .then((res) => {
+        this.props.doLoading();
+        let data = res.data;
+        if (data.status === "OK") {
+          this.setState({
+            openSuccess: true,
+            openSuccessText:
+              this.state.setOpenEdit === true
+                ? "Edit data successfully updated"
+                : "Data save successfully",
+          });
+          this.handleCloseAddNew();
+          this.handleCloseEdit();
+        }
+      })
+      .catch((err) => {
+        this.props.doLoading();
+        console.log(err);
+      });
+  };
+
+  changeSelectIsavailable = (is_available) => {
+    this.setState({ is_available: is_available });
   };
 
   doRowEdit = (row) => {
-    // console.log(row);
     this.setState({
       setOpenEdit: true,
-      groupId: row.groupId,
-      groupName: row.groupName,
-      isAvailable: row.isAvailable === "SHOW" ? 1 : 0,
-      tableDisplay: row.info,
+      brand_id: row.brand_id,
+      brand_name: row.brand_name,
+      is_available: row.is_available === "SHOW" ? 1 : 0,
     });
   };
 
   doRowDelete = (row) => {
-    // console.log(row);
     confirmAlert({
-      message: "Are you sure want to delete group " + row.groupName + "?",
+      message: "Are you sure want to delete brand " + row.brand_name + "?",
       buttons: [
         {
           label: "Yes",
-          onClick: (phoneno) => {
-            var groupId = row.groupId;
-            // console.log(groupId);
-            this.deleteGroup(groupId);
+          onClick: () => {
+            var brand_id = row.brand_id;
+            this.deleteBrand(brand_id);
           },
         },
         {
@@ -209,191 +278,23 @@ class GroupListPage extends Component {
   };
 
   addNew = () => {
-    // this.props.history.push("/panel/inputadmin");
     this.setState({
       setOpenAddNew: true,
     });
   };
 
-  doSearch = () => {
-    this.props.doLoading();
-    axios
-      .post(
-        serverUrl + "group_list.php",
-        {},
-
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-        }
-      )
-      .then((response) => {
-        this.props.doLoading();
-        var temp = this.state.tableData;
-        temp = response.data.records;
-        for (var i = 0; i < temp.length; i++) {
-          temp[i].id = i + 1;
-        }
-        this.setState({ tableData: temp });
-      })
-      .catch((error) => {
-        this.props.doLoading();
-        console.log(error);
-        alert(error);
-      });
-  };
-
-  deleteGroup = (groupId) => {
-    this.props.doLoading();
-    axios
-      .post(
-        serverUrl + "group_delete.php",
-        {
-          groupId: groupId,
-        },
-
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-        }
-      )
-      .then((response) => {
-        this.props.doLoading();
-        this.setState({
-          openSuccess: true,
-          openSuccessText: "Data deleted successfully",
-        });
-      })
-      .catch((error) => {
-        this.props.doLoading();
-        console.log(error);
-        alert(error);
-      });
-  };
-
-  loadCameraSelect = () => {
-    apiCameraSelect()
-      .then((response) => {
-        let dataresponse = response.data;
-        // console.log(response);
-        if (dataresponse.records.length > 0) {
-          this.setState({
-            optionsDevice: dataresponse.records,
-          });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  componentDidMount = () => {
-    this.loadCameraSelect();
-    this.props.doLoading();
-    axios
-      .post(
-        serverUrl + "group_list.php",
-        {},
-
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-        }
-      )
-      .then((response) => {
-        this.props.doLoading();
-        // console.log(response.data);
-        var temp = this.state.tableData;
-        temp = response.data.records;
-        for (var i = 0; i < temp.length; i++) {
-          temp[i].id = i + 1;
-        }
-        this.setState({ tableData: temp });
-      })
-      .catch((error) => {
-        this.props.doLoading();
-        console.log(error);
-        alert(error);
-      });
-  };
-
   reset = () => {
     let data = "";
     this.setState({ filter: data, openSuccess: false, openSuccessText: "" });
-    this.props.doLoading();
-    axios
-      .post(
-        serverUrl + "group_list.php",
-        {},
-
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-        }
-      )
-      .then((response) => {
-        this.props.doLoading();
-        // console.log(response.data);
-        var temp = this.state.tableData;
-        temp = response.data.records;
-        for (var i = 0; i < temp.length; i++) {
-          temp[i].id = i + 1;
-        }
-        this.setState({ tableData: temp });
-      })
-      .catch((error) => {
-        this.props.doLoading();
-        console.log(error);
-        alert(error);
-      });
-  };
-
-  onSubmit = () => {
-    let params = {
-      groupId: this.state.groupId,
-      groupName: this.state.groupName,
-      isAvailable: this.state.isAvailable,
-      deviceInfo: this.state.tableDisplay,
-    };
-
-    // console.log(params);
-
-    this.props.doLoading();
-    axios
-      .post(serverUrl + "group_insert_update.php", params, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        },
-      })
-      .then((response) => {
-        this.props.doLoading();
-        this.setState({
-          openSuccess: true,
-          openSuccessText:
-            this.state.setOpenEdit === true
-              ? "Edit data successfully updated"
-              : "Data save successfully",
-        });
-        this.handleCloseAddNew();
-        this.handleCloseEdit();
-      })
-      .catch((error) => {
-        this.props.doLoading();
-        console.log(error);
-        alert(error);
-      });
+    this.doLoadBrandDevices();
   };
 
   checkData = () => {
-    const { groupName } = this.state;
+    const { brand_name } = this.state;
 
-    if (groupName === "") {
+    if (brand_name === "") {
       this.setState({
-        messageError: "Enter group name.",
+        messageError: "Enter brand name.",
         setOpenValidation: true,
       });
     } else {
@@ -453,8 +354,8 @@ class GroupListPage extends Component {
   handleCloseAddNew = () => {
     this.setState({
       setOpenAddNew: false,
-      groupName: "",
-      isAvailable: 0,
+      brand_name: "",
+      is_available: 0,
     });
   };
 
@@ -470,7 +371,7 @@ class GroupListPage extends Component {
         <AppBar style={stylesDialog.appBar}>
           <Toolbar>
             <Typography variant="h5" style={stylesDialog.title}>
-              Add Group
+              Add Brand
             </Typography>
             <IconButton
               edge="end"
@@ -498,7 +399,7 @@ class GroupListPage extends Component {
                     textTransform: "capitalize",
                   }}
                 >
-                  Group Name
+                  Brand Name
                 </Typography>
               </Grid>
               <Grid item xs={10}>
@@ -507,10 +408,10 @@ class GroupListPage extends Component {
                   type="text"
                   name="groupname"
                   id="groupname"
-                  placeholder="Enter group name"
-                  value={this.state.groupName}
+                  placeholder="Enter brand name"
+                  value={this.state.brand_name}
                   onChange={(event) =>
-                    this.setState({ groupName: event.target.value })
+                    this.setState({ brand_name: event.target.value })
                   }
                 />
               </Grid>
@@ -534,11 +435,11 @@ class GroupListPage extends Component {
               <Grid item xs={10}>
                 <SelectMultiColumn
                   width={"100%"}
-                  value={this.state.isAvailable}
+                  value={this.state.is_available}
                   valueColumn={"value"}
                   showColumn={"text"}
                   columns={["text"]}
-                  data={this.state.isAvailableShow}
+                  data={this.state.is_availableShow}
                   onChange={this.changeSelectIsavailable}
                 />
               </Grid>
@@ -597,9 +498,9 @@ class GroupListPage extends Component {
   handleCloseEdit = () => {
     this.setState({
       setOpenEdit: false,
-      groupId: 0,
-      groupName: "",
-      isAvailable: 0,
+      brand_id: 0,
+      brand_name: "",
+      is_available: 0,
     });
   };
 
@@ -609,13 +510,13 @@ class GroupListPage extends Component {
         onClose={this.handleCloseEdit}
         aria-labelledby="customized-dialog-title"
         open={this.state.setOpenEdit}
-        fullWidth="lg"
-        maxWidth="lg"
+        fullWidth="md"
+        maxWidth="md"
       >
         <AppBar style={stylesDialog.appBar}>
           <Toolbar>
             <Typography variant="h5" style={stylesDialog.title}>
-              Edit Group
+              Edit Brand
             </Typography>
             <IconButton
               edge="end"
@@ -643,19 +544,19 @@ class GroupListPage extends Component {
                     textTransform: "capitalize",
                   }}
                 >
-                  Group Name
+                  Brand Name
                 </Typography>
               </Grid>
               <Grid item xs={10}>
                 <Input
                   autoComplete="off"
                   type="text"
-                  name="groupname"
-                  id="groupname"
-                  placeholder="Enter group name"
-                  value={this.state.groupName}
+                  name="brand_name"
+                  id="brand_name"
+                  placeholder="Enter brand name"
+                  value={this.state.brand_name}
                   onChange={(event) =>
-                    this.setState({ groupName: event.target.value })
+                    this.setState({ brand_name: event.target.value })
                   }
                 />
               </Grid>
@@ -679,17 +580,13 @@ class GroupListPage extends Component {
               <Grid item xs={10}>
                 <SelectMultiColumn
                   width={"100%"}
-                  value={this.state.isAvailable}
+                  value={this.state.is_available}
                   valueColumn={"value"}
                   showColumn={"text"}
                   columns={["text"]}
-                  data={this.state.isAvailableShow}
+                  data={this.state.is_availableShow}
                   onChange={this.changeSelectIsavailable}
                 />
-              </Grid>
-              <br />
-              <Grid item xs={12}>
-                <div className="form-detail">{this.renderDeviceInfo()}</div>
               </Grid>
             </Grid>
           </Box>
@@ -743,246 +640,6 @@ class GroupListPage extends Component {
     );
   };
 
-  renderDeviceInfo = () => {
-    return (
-      <div className="form-detail">
-        <div className="page-header">
-          <Typography
-            component="span"
-            variant="h2"
-            style={{
-              fontSize: 16,
-              color: "#006432",
-              fontWeight: "bold",
-              textTransform: "capitalize",
-              float: "left",
-            }}
-          >
-            Device Camera List
-          </Typography>
-          <Button
-            variant="contained"
-            size="small"
-            style={{
-              backgroundColor: "#008b02",
-              float: "right",
-            }}
-            startIcon={<AddBox />}
-            onClick={() => this.addNewInfo()}
-          >
-            <Typography
-              variant="button"
-              style={{
-                fontSize: 14,
-                color: "#fff",
-                textTransform: "capitalize",
-              }}
-            >
-              Add Device
-            </Typography>
-          </Button>
-          <span className="dash">&nbsp;&nbsp;</span>
-        </div>
-        <div className="detail-info-input">
-          <FormGroup>
-            <br></br>
-            <ReactTable
-              ref={(r) => (this.reactTable = r)}
-              data={this.state.tableDisplay}
-              columns={[
-                {
-                  Header: "Device Name",
-                  headerStyle: { fontWeight: "bold" },
-                  accessor: "deviceName",
-                  style: { textAlign: "center" },
-                },
-                {
-                  Header: "Url RTSP",
-                  headerStyle: { fontWeight: "bold" },
-                  accessor: "urlRTSP",
-                  style: { textAlign: "center" },
-                },
-                {
-                  Header: "Action",
-                  headerStyle: { fontWeight: "bold" },
-                  accessor: "",
-                  sortable: true,
-                  filterable: true,
-                  style: { textAlign: "center" },
-                  Cell: (e) => (
-                    <div>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        style={{
-                          backgroundColor: "#ff0000",
-                        }}
-                        startIcon={<Delete />}
-                        onClick={() => this.doRowDeleteInfo(e.original)}
-                      >
-                        <Typography
-                          variant="button"
-                          style={{
-                            fontSize: 14,
-                            color: "#fff",
-                            textTransform: "capitalize",
-                          }}
-                        >
-                          Delete
-                        </Typography>
-                      </Button>
-                    </div>
-                  ),
-                },
-              ]}
-              style={{ backgroundColor: "#f2f2f2" }}
-              filterable
-              defaultFilterMethod={(filter, row) =>
-                String(row[filter.id])
-                  .toLowerCase()
-                  .includes(filter.value.toLowerCase())
-              }
-              defaultPageSize={5}
-            />
-          </FormGroup>
-        </div>
-      </div>
-    );
-  };
-
-  addNewInfo = () => {
-    this.setState({
-      setOpenFormInfo: true,
-    });
-  };
-
-  handleCloseRowInfo = () => {
-    this.setState({
-      setOpenFormInfo: false,
-      selectedOptionDevice: null,
-    });
-  };
-
-  renderFormInfo = () => {
-    return (
-      <Dialog
-        open={this.state.setOpenFormInfo}
-        onClose={this.handleCloseRowInfo}
-        aria-labelledby="customized-dialog-title"
-        fullWidth="md"
-        maxWidth="md"
-      >
-        <AppBar style={stylesDialog.appBar}>
-          <Toolbar>
-            <Typography
-              component="span"
-              variant="h2"
-              style={stylesDialog.title}
-            >
-              Add Device
-            </Typography>
-            <IconButton
-              edge="end"
-              color="inherit"
-              onClick={() => this.handleCloseRowInfo()}
-              aria-label="close"
-            >
-              <Close />
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-        <DialogContent dividers style={{ height: "300px" }}>
-          <Box sx={{ flexGrow: 1 }} style={{ marginBottom: 60, marginTop: 20 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={2}>
-                <Label for="infoName">Device Camera</Label>
-              </Grid>
-              <Grid item xs={10}>
-                <Select
-                  isClearable
-                  classNamePrefix="select"
-                  placeholder="Select For..."
-                  value={this.state.selectedOptionDevice}
-                  onChange={this.handleChangeOptionDevice}
-                  options={this.state.optionsDevice}
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            size="small"
-            style={{
-              backgroundColor: "#808080",
-            }}
-            startIcon={<Cancel />}
-            onClick={this.handleCloseRowInfo}
-          >
-            <Typography
-              variant="button"
-              style={{
-                color: "#fff",
-                textTransform: "capitalize",
-              }}
-            >
-              Cancel
-            </Typography>
-          </Button>{" "}
-          <Button
-            variant="contained"
-            size="small"
-            style={{
-              backgroundColor: "#004dcf",
-            }}
-            startIcon={<Save />}
-            onClick={() => this.checkDataInfo()}
-          >
-            <Typography
-              variant="button"
-              style={{
-                color: "#fff",
-                textTransform: "capitalize",
-              }}
-            >
-              Save
-            </Typography>
-          </Button>{" "}
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
-  checkDataInfo = () => {
-    const { selectedOptionDevice } = this.state;
-    if (selectedOptionDevice === null) {
-      this.setState({
-        messageError: "Select device camera",
-        setOpenValidation: true,
-      });
-    } else {
-      this.doSaveInfoDevice();
-    }
-  };
-
-  doSaveInfoDevice = () => {
-    var infoData = {
-      deviceId: this.state.selectedOptionDevice.deviceId,
-      deviceName: this.state.selectedOptionDevice.deviceName,
-      urlRTSP: this.state.selectedOptionDevice.urlRTSP,
-    };
-
-    var dropDataInfo = this.state.tableDisplay || [];
-    dropDataInfo.push(infoData);
-
-    // console.log(dropDataInfo);
-    this.setState({
-      tableDisplay: dropDataInfo,
-    });
-    this.handleCloseRowInfo();
-  };
-
   doRowDeleteInfo = (item) => {
     this.setState({
       openAlertDelete: true,
@@ -992,20 +649,6 @@ class GroupListPage extends Component {
 
   handleCloseItemInfo = () => {
     this.setState({
-      openAlertDelete: false,
-      itemDeleted: {},
-    });
-  };
-
-  doDeleteInfoPaket = () => {
-    let dataDisplay = this.state.tableDisplay;
-    let itemRemove = this.state.itemDeleted;
-    let resultItem = dataDisplay.filter(
-      (obj, i) => obj.deviceId !== itemRemove.deviceId
-    );
-
-    this.setState({
-      tableDisplay: resultItem,
       openAlertDelete: false,
       itemDeleted: {},
     });
@@ -1028,7 +671,7 @@ class GroupListPage extends Component {
               variant="h2"
               style={stylesDialog.title}
             >
-              Delete Device
+              Delete Brand
             </Typography>
             <IconButton
               edge="end"
@@ -1047,7 +690,7 @@ class GroupListPage extends Component {
               variant="body2"
               style={(stylesListDialog.inline, { fontSize: 16, color: "#333" })}
             >
-              Are you sure want to delete device {item.deviceName}?
+              Are you sure want to delete brand {item.deviceName}?
             </Typography>
           </DialogContentText>
         </DialogContent>
@@ -1153,7 +796,7 @@ class GroupListPage extends Component {
                     })
                   }
                 >
-                  Group
+                  Brand
                 </Typography>
                 <br></br>
                 <div className="contentDate">
@@ -1225,10 +868,9 @@ class GroupListPage extends Component {
         {this.renderDialogValidation()}
         {this.renderSuccess()}
         {this.renderDialogEdit()}
-        {this.renderFormInfo()}
         {this.renderRemoveItemInfo()}
       </Box>
     );
   }
 }
-export default GroupListPage;
+export default BrandDevicePage;
