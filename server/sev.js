@@ -120,7 +120,7 @@ const promises = userEmailArray.map(
       setTimeout(() => {
         console.log(userEmail);
         resolve();
-      }, 1000 * i)
+      }, 2000 * i)
     )
 );
 Promise.all(promises).then(() => console.log("done"));
@@ -148,31 +148,31 @@ Promise.all(promises).then(() => console.log("done"));
 //   .then(() => {
 //     console.log(arr);
 //   });
-const util = require("util");
-const exec = util.promisify(require("child_process").exec);
+// const util = require("util");
+// const exec = util.promisify(require("child_process").exec);
 
-async function runCmdGetFileSmbClientFromNAS() {
-  var pathLocal = "/home/cideng87/ServerCamera/videos/playback/" + ";";
-  var PathNAS = "/IPCameraLT4/20220216;";
+// async function runCmdGetFileSmbClientFromNAS() {
+//   var pathLocal = "/home/cideng87/ServerCamera/videos/playback/" + ";";
+//   var PathNAS = "/IPCameraLT4/20220216;";
 
-  console.log("GET ALL FILE FROM NAS" + PathNAS);
-  let stdout;
-  let stderr;
-  try {
-    stdout,
-      (stderr = await exec(
-        "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
-          " 'prompt OFF; recurse ON; cd " +
-          PathNAS +
-          " lcd " +
-          pathLocal +
-          " mput *'"
-      ));
-    console.log("stdout:", stdout);
-    console.log("stderr:", stderr);
-  } catch (e) {
-    console.error(e);
-  }
-}
+//   console.log("GET ALL FILE FROM NAS" + PathNAS);
+//   let stdout;
+//   let stderr;
+//   try {
+//     stdout,
+//       (stderr = await exec(
+//         "smbclient -U camera '//192.168.0.117/camstorage' Cideng87c --command" +
+//           " 'prompt OFF; recurse ON; cd " +
+//           PathNAS +
+//           " lcd " +
+//           pathLocal +
+//           " mput *'"
+//       ));
+//     console.log("stdout:", stdout);
+//     console.log("stderr:", stderr);
+//   } catch (e) {
+//     console.error(e);
+//   }
+// }
 
-runCmdGetFileSmbClientFromNAS();
+// runCmdGetFileSmbClientFromNAS();
