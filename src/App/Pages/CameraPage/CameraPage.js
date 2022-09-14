@@ -7,8 +7,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import "react-table/react-table.css";
 import "./CameraPage.style.css";
 import { serverUrl } from "../../../config.js";
-import { activeLanguage } from "../../../config";
-import { getLanguage } from "../../../languages";
 import SelectMultiColumn from "../../Components/SelectMultiColumn/SelectMultiColumn";
 import { Box, Paper, Grid, Typography } from "@mui/material";
 

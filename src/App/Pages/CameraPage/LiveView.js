@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { w3cwebsocket as W3CWebSocket } from "websocket";
+// import { w3cwebsocket as W3CWebSocket } from "websocket";
 import JSMpeg from "@cycjimmy/jsmpeg-player";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -20,7 +20,6 @@ import {
 import {
   GridViewTwoTone,
   GridOnTwoTone,
-  Fullscreen as fullscreen,
   FullscreenRounded,
   ViewHeadlineOutlined,
   Refresh,
@@ -42,7 +41,7 @@ const customStyles = {
 };
 
 var cameraplayer = null;
-const client = new W3CWebSocket("ws://127.0.0.1:4000");
+// const client = new W3CWebSocket("ws://127.0.0.1:4000");
 // const client = new W3CWebSocket("ws://192.168.0.107:8000");
 // const client = new W3CWebSocket("ws://192.168.0.250:8000");
 
@@ -159,7 +158,7 @@ class LiveViewPage extends Component {
     console.log("stream camera list", data);
     if (data.result.length > 0) {
       this.cameraList = data.result;
-      data.result.map((cam, i) => {
+      data.result.forEach((cam, i) => {
         var videoUrl = `ws://${this.state.ffmpegIP}:700${i}/`;
         var idCanvas = `#video-canvas${i}`;
         console.log("id canvas", idCanvas);

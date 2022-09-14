@@ -141,7 +141,7 @@ class ListAdmin extends Component {
       buttons: [
         {
           label: "Yes",
-          onClick: (phoneno) => {
+          onClick: () => {
             var phoneno = row.phoneno;
             // console.log(phoneno);
             this.deleteAdmin(phoneno);

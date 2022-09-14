@@ -11,47 +11,14 @@ import {
   Grid,
   Typography,
   Button,
-  Dialog,
-  AppBar,
-  Toolbar,
-  DialogActions,
-  DialogContent,
   IconButton,
-  DialogContentText,
   Stack,
   Alert,
 } from "@mui/material";
-import { Input } from "reactstrap";
-import {
-  Refresh,
-  Edit,
-  Delete,
-  AddBox,
-  Close,
-  Save,
-  Cancel,
-} from "@mui/icons-material";
+import { Refresh, Edit, Delete, AddBox, Close } from "@mui/icons-material";
 const stylesListComent = {
   inline: {
     display: "inline",
-  },
-};
-
-const stylesListDialog = {
-  inline: {
-    display: "inline",
-  },
-};
-
-const stylesDialog = {
-  appBar: {
-    position: "relative",
-    backgroundColor: "#036b50",
-  },
-  title: {
-    marginLeft: 0,
-    flex: 1,
-    fontSize: 16,
   },
 };
 
@@ -217,7 +184,7 @@ class DeviceCameraPage extends Component {
       buttons: [
         {
           label: "Yes",
-          onClick: (deviceId) => {
+          onClick: () => {
             var deviceId = row.deviceId;
             // console.log(deviceId);
             this.deleteDevice(deviceId);

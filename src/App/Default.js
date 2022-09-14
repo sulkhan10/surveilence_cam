@@ -97,7 +97,7 @@ class Default extends Component {
           isdefault: 1,
         };
         let getDefault = false;
-        data.records.map((comm, i) => {
+        data.records.forEach((comm, i) => {
           if (comm.isdefault === 1) {
             defaultCommunity = comm;
             getDefault = true;

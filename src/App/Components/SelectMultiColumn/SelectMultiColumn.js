@@ -115,7 +115,7 @@ class SelectMultiProfile extends Component {
   };
 
   renderOptions = () => {
-    if (this.state.isOptionsShow && this.state.data != undefined) {
+    if (this.state.isOptionsShow && this.state.data !== undefined) {
       return (
         <div
           className="select-multi-column-options-container"
