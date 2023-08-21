@@ -2,5 +2,7 @@
 /build
 /node_modules
 /server/node_modules
+/server/snapshots
+/server/videos
 /server/package.json
 /server/package-lock.json
