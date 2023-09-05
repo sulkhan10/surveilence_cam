@@ -1,0 +1,7 @@
+{
+    "model": "./face_detection/face_model.pb",
+    "confidence_threshold": 0.5,
+    "max_faces": 10,
+    "output_format": "json"
+  }
+  

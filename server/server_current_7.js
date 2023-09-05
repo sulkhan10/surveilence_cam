@@ -305,6 +305,7 @@ function startLiveCamera(conn, params) {
         //   fileNameFormat: "HHmmss",
         // });
         // rec.startRecording();
+        
       });
     }
   }
@@ -410,14 +411,14 @@ function saveCameraList(dataCamera, newCamera) {
 
         // clientSMB.mkdir(obj.deviceName.replace(/\s/g, ""));
 
-        var rec = new Recorder({
-          url: obj.urlRTSP,
-          folder: join(__dirname, "/videos/record"),
-          name: obj.deviceName.replace(/\s/g, ""),
-          directoryPathFormat: "YYYYMMDD",
-          fileNameFormat: "HHmmss",
-        });
-        rec.startRecording();
+        // var rec = new Recorder({
+        //   url: obj.urlRTSP,
+        //   folder: join(__dirname, "/videos/record"),
+        //   name: obj.deviceName.replace(/\s/g, ""),
+        //   directoryPathFormat: "YYYYMMDD",
+        //   fileNameFormat: "HHmmss",
+        // });
+        // rec.startRecording();
       });
     }
   } else {

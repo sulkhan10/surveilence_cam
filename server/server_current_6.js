@@ -10,16 +10,75 @@ const { join, resolve } = require("path");
 const findRemoveSync = require("find-remove");
 const Recorder = require("node-rtsp-recorder").Recorder;
 const FileHandler = require("rtsp-downloader").FileHandler;
-const fs = require("fs");
+const fs = require("fs").promises;
+const { Worker, isMainThread, parentPort } = require("worker_threads");
+
 const readdir = util.promisify(fs.readdir);
 const unlink = util.promisify(fs.unlink);
 const fh = new FileHandler();
 const SambaClient = require("samba-client");
-const webSocketsServerPort = 4000;
+const webSocketsServerPort = 4001;
 const webSocketServer = require("websocket").server;
 const http = require("http");
-const { dir } = require("console");
-const { toMAC, toIP } = require("@network-utils/arp-lookup");
+
+
+const faceapi = require("face-api.js");
+const canvas = require("canvas");
+const { Canvas, Image, ImageData } = canvas;
+faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
+
+// ... (Previous code)
+
+// Load the face-api.js models
+async function loadModels() {
+  await faceapi.nets.ssdMobilenetv1.loadFromDisk("models");
+  await faceapi.nets.faceLandmark68Net.loadFromDisk("models");
+}
+
+// Detect faces using face-api.js
+async function detectFaces(imagePath) {
+  const img = await canvas.loadImage(imagePath);
+  const detections = await faceapi.detectAllFaces(img).withFaceLandmarks();
+  return detections.length; // Return the number of detected faces
+}
+
+async function faceCompareChina(params) {
+  try {
+    console.log("params", params);
+    const body = {
+      groupID: "1",
+      dbIDs: ["1", "2", "22", "101", "testcideng"],
+    };
+
+    const response = await axios.post(
+      "https://faceengine.deepcam.cn/pipeline/api/face/match",
+      {
+        ...body,
+        ...params,
+      }
+    );
+
+    console.log(response.data);
+
+    if (response.data.data) {
+      const paramApiLocal = {
+        name: response.data.data.imageID,
+        image: "data:image/jpeg;base64," + params.imageData,
+        deviceId: params.deviceId,
+      };
+
+      const result = await axios.post(
+        "https://dev.transforme.co.id/gema_admin_api/visitor_log/insert.php",
+        paramApiLocal
+      );
+
+      console.log("result", result);
+    }
+  } catch (error) {
+    console.error("Error in faceCompareChina:", error);
+  }
+}
+
 const server = http.createServer(function (request, response) {
   // console.log("request starting...", new Date());
   const headers = {
@@ -232,89 +291,147 @@ var processHLS = null;
 
 function startLiveCamera(conn, params) {
   let dataParam = JSON.parse(params.listViewCameraData);
-    // let resultCameraData = [
-    //   {
-    //     deviceName: "Camera 1",
-    //     urlRTSP: "rtsp://SIMCAM:EWVN1D@192.168.1.63/live",
-    //     // outputFileFormat: "mp4",
-    //     // videoCodec: "h264",
-    //     // videoBitRate: "500k",
-    //     // frameRate: 30,
-    //     // videoSize: "1280x720",
-    //     IpAddress: "192.168.1.63"
-    //   }
-    // ];
-  
-    console.log("param data", dataParam);
-    
-    if (dataParam.length>0) {
-          var dataCameraLive = [];
+  // let dataParam = params
 
-      dataParam.map((obj, i) => {
-        var pathStream = "./videos/stream/" + obj.IpAddress + "_.m3u8";
-        // var cmd_ffmpeg = "ffmpeg";
-        var cmd_ffmpeg = "/usr/local/bin/ffmpeg";
-        // var cmd_ffmpeg = "/Users/bernard/Desktop/SimcamAdmin/server/ffmpeg";
+  console.log("param data", dataParam);
 
-        var args_parameter = [
-          "-i",
-          obj.urlRTSP,
-          "-fflags",
-          "flush_packets",
-          "-max_delay",
-          "2",
-          "-flags",
-          "-global_header",
-          "-hls_time",
-          "2",
-          "-hls_list_size",
-          "3",
-          // "-vf",
-          // "detect_face=detect.json",
-          "-vcodec",
-          "copy",
-          "-y",
-          pathStream,
-        ];
-  
-        processHLS = spawn(cmd_ffmpeg, args_parameter);
-  
-        processHLS.stdout.on("data", function (data) {
-          // console.log("cek data output", data);
+  if (dataParam.length > 0) {
+    for (const obj of dataParam) {
+      // if (isMainThread) {
+      //   const worker = new Worker("./streamWorker.js");
+
+      //   worker.on("message", (message) => {
+      //     console.log("Message from worker:", message);
+      //   });
+
+      //   const cameraParams = {
+      //     urlRTSP: obj.urlRTSP,
+      //     IpAddress: obj.IpAddress, // Modify this according to your needs
+      //     // Add other camera parameters as needed
+      //   };
+
+      //   worker.postMessage({ command: "startCameras", cameraParams });
+      // } else {
+      //   parentPort.on("message", async (message) => {
+      //     if (message.command === "startCameras") {
+      //       try {
+      //         // Start camera processing using message.cameraParams
+      //         await startCameraProcessing(message.cameraParams);
+
+      //         parentPort.postMessage({ status: "completed" });
+      //       } catch (error) {
+      //         console.error("Error in worker:", error);
+      //         parentPort.postMessage({ status: "error", error: error.message });
+      //       }
+      //     }
+      //   });
+      // }
+
+      try {
+        const snapshot = new Recorder({
+          url: obj.urlRTSP,
+          folder: join(__dirname, "/snapshots"),
+          name: obj.deviceName.replace(/\s/g, ""),
+          directoryPathFormat: "YYYYMMDD",
+          fileNameFormat: "HHmmss",
+          type: "image",
+          imageFormat: "jpg",
+          imageQuality: 100,
+          imageWidth: 1280,
+          imageHeight: 720,
         });
-  
-        processHLS.stderr.setEncoding("utf8");
-        processHLS.stderr.on("data", function (data) {
-          //console.log("read data " + data);
-        });
-  
-        processHLS.on("close", function (data) {
-          console.log("finished " + data);
-          // processHLS = null;
-          // rec.stopRecording();
-          // saveCameraList(arrDataCamera, null);
-        });
-  
-        // clientSMB.mkdir(obj.deviceName.replace(/\s/g, ""));
-  
-        // var rec = new Recorder({
-        //   url: obj.urlRTSP,
-        //   folder: join(__dirname, "/videos/record"),
-        //   name: obj.deviceName.replace(/\s/g, ""),
-        //   directoryPathFormat: "YYYYMMDD",
-        //   fileNameFormat: "HHmmss",
-        // });
-        // rec.startRecording();
-      });
+
+        const captureInterval = 5000; // Capture an image every 5 seconds
+
+        async function captureAndLogImage() {
+          try {
+            // Capture the image
+            await snapshot.captureImage();
+
+            // Get the current timestamp for constructing the path
+            const currentDate = new Date();
+            const yyyymmdd = `${currentDate.getFullYear()}${(
+              currentDate.getMonth() + 1
+            )
+              .toString()
+              .padStart(2, "0")}${currentDate
+              .getDate()
+              .toString()
+              .padStart(2, "0")}`;
+            const hhmmss = `${currentDate
+              .getHours()
+              .toString()
+              .padStart(2, "0")}${currentDate
+              .getMinutes()
+              .toString()
+              .padStart(2, "0")}${currentDate
+              .getSeconds()
+              .toString()
+              .padStart(2, "0")}`;
+
+            // Construct the image path
+            const imagePath = join(
+              snapshot.folder,
+              snapshot.name,
+              yyyymmdd,
+              "image",
+              `${hhmmss}.jpg`
+            );
+
+            // Log the image path and capture time
+            console.log("Captured image:", imagePath, "at", currentDate);
+
+            // Wait for a delay before detecting faces
+            await new Promise((resolve) => setTimeout(resolve, 5000)); // Adjust delay as needed
+
+            // Load face-api.js models
+            await loadModels();
+
+            const fs = require("fs");
+            // Perform face detection on the image
+            const detectedFacesCount = await detectFaces(imagePath);
+            if (detectedFacesCount > 0) {
+              console.log("Face detected!");
+
+              // Convert the image to base64
+              const imageData = fs.readFileSync(imagePath, "base64");
+
+              // console.log('Image in base64:', imageData);
+
+              // Now, you can proceed with your face comparison and API calls
+              faceCompareChina({
+                imageData: imageData,
+                deviceId: obj.deviceId,
+              });
+              // fs.unlinkSync(imagePath);
+            } else {
+              console.log("No faces detected.");
+              // fs.unlinkSync(imagePath);
+              // console.log('Image file deleted.');
+            }
+          } catch (error) {
+            console.error("Error capturing and logging image:", error);
+          }
+        }
+
+        setInterval(async () => {
+          await captureAndLogImage();
+        }, captureInterval);
+      } catch (error) {
+        console.error("An error occurred:", error);
+      }
     }
   }
-
-
+}
 
 setInterval(() => {
   var result = findRemoveSync("./videos/stream", {
     age: { seconds: 30 },
     extensions: ".ts",
+  });
+  var result = findRemoveSync("./snapshots", {
+    age: { seconds: 300 },
+    extensions: ".jpg",
   });
   // console.log(result);
 }, 5000);
@@ -322,18 +439,19 @@ setInterval(() => {
 //==============GET DATA CAMERA FROM DATABASE==========================//
 // axios({
 //   method: "post",
-//   url: webserviceurl + "/viewList.php",
+//   url:  "https://dev.transforme.co.id/gema_admin_api/device/read_online.php",
 //   data: {},
 //   headers: {
 //     "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
 //   },
 // })
 //   .then((response) => {
-//     // console.log("cek data camera List", response.data);
-//     if (response.data.status === "OK") {
-//       if (response.data.records.length > 0) {
-//         (dataStreamCamera = response.data.records),
-//           saveCameraList(response.data.records, null);
+//     console.log("cek data camera List", response.data.data.records);
+//     if (response.data.status == 200) {
+//       if (response.data.data.records.length > 0) {
+//         (dataStreamCamera = response.data.data.records),
+//           saveCameraList(response.data.data.records, null);
+//         // startLiveCamera(null,response.data.data.records);
 //       }
 //     }
 //   })
@@ -410,14 +528,14 @@ function saveCameraList(dataCamera, newCamera) {
 
         // clientSMB.mkdir(obj.deviceName.replace(/\s/g, ""));
 
-        var rec = new Recorder({
-          url: obj.urlRTSP,
-          folder: join(__dirname, "/videos/record"),
-          name: obj.deviceName.replace(/\s/g, ""),
-          directoryPathFormat: "YYYYMMDD",
-          fileNameFormat: "HHmmss",
-        });
-        rec.startRecording();
+        // var rec = new Recorder({
+        //   url: obj.urlRTSP,
+        //   folder: join(__dirname, "/videos/record"),
+        //   name: obj.deviceName.replace(/\s/g, ""),
+        //   directoryPathFormat: "YYYYMMDD",
+        //   fileNameFormat: "HHmmss",
+        // });
+        // rec.startRecording();
       });
     }
   } else {
@@ -462,14 +580,14 @@ function saveCameraList(dataCamera, newCamera) {
         // saveCameraList(arrDataCamera, null);
       });
 
-      var rec = new Recorder({
-        url: obj.urlRTSP,
-        folder: join(__dirname, "/videos/record"),
-        name: obj.deviceName.replace(/\s/g, ""),
-        directoryPathFormat: "YYYYMMDD",
-        fileNameFormat: "HHmmss",
-      });
-      rec.startRecording();
+      // var rec = new Recorder({
+      //   url: obj.urlRTSP,
+      //   folder: join(__dirname, "/videos/record"),
+      //   name: obj.deviceName.replace(/\s/g, ""),
+      //   directoryPathFormat: "YYYYMMDD",
+      //   fileNameFormat: "HHmmss",
+      // });
+      // rec.startRecording();
     });
   }
 

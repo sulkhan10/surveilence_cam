@@ -5,18 +5,25 @@
   "author": "Mael T.",
   "license": "MIT",
   "scripts": {
+    "install_arm64": "build-opencv --version 4.5.4 --flag=\"-DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_OSX_ARCHITECTURES=arm64\" build",
+    "install_4.5.5_cuda": "build-opencv --version 4.5.5 --flags=\"-DWITH_CUDA=ON -DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON -DCUDA_FAST_MATH=ON\" build",
+    "do-install": "build-opencv build",
     "serve": "nodemon server.js",
     "start": "nodemon server.js"
   },
   "dependencies": {
     "@network-utils/arp-lookup": "^2.0.1",
+    "@u4/opencv4nodejs": "^6.5.2",
     "address": "^1.2.0",
     "axios": "^0.24.0",
     "buffer": "^6.0.3",
+    "canvas": "^2.11.2",
     "child_process": "^1.0.2",
     "execa": "^6.0.0",
     "express": "^4.17.2",
+    "face-api.js": "^0.22.2",
     "find-remove": "^4.0.4",
+    "fvi-node-face-api-rtsp-stream": "^0.0.3",
     "http": "0.0.1-security",
     "moment": "^2.29.1",
     "node-rtsp-recorder": "^1.0.3",
@@ -27,6 +34,12 @@
     "rtsp-video-recorder-ffmpeg-options": "^1.4.0-alpha.3",
     "samba-client": "^4.0.0",
     "websocket": "^1.0.34"
+  },
+  "opencv4nodejs": {
+    "disableAutoBuild": 1,
+    "opencvIncludeDir": "/usr/local/Cellar/opencv/4.5.0_5/include",
+    "opencvLibDir": "/usr/local/Cellar/opencv/4.5.0_5/lib",
+    "opencvBinDir": "/usr/local/Cellar/opencv/4.5.0_5/bin"
   },
   "devDependencies": {
     "eslint": "^7.26.0"

@@ -39,7 +39,6 @@ async function imageToBase64(imagePath) {
 
 async function faceCompareChina(params) {
   try {
-    console.log("params", params);
     const body = {
       groupID: "1",
       dbIDs: ["1", "2", "22", "101", "testcideng"],
@@ -59,7 +58,6 @@ async function faceCompareChina(params) {
       const paramApiLocal = {
         name: response.data.data.imageID,
         image: "data:image/jpeg;base64," + params.imageData,
-        deviceId : params.deviceId,
       };
 
       const result = await axios.post(
@@ -77,10 +75,9 @@ async function faceCompareChina(params) {
 async function startLiveCamera() {
   const resultCameraData = [
     {
-      deviceName: "Kamera 1",
-      urlRTSP: "rtsp://192.168.18.15:554/ch0_0.h264",
-      IpAddress: "192.168.18.15",
-      deviceId : '92929dca03cf2da2bfdeb995a714d5a6'
+      deviceName: "soeta1",
+      urlRTSP: "rtsp://SIMCAM:VK6SXA@192.168.1.120/live",
+      IpAddress: "192.168.1.120",
     },
   ];
 
@@ -93,7 +90,7 @@ async function startLiveCamera() {
     );
     const cmd_ffmpeg = "/usr/local/bin/ffmpeg";
 
-    var args_parameter = [
+    const args_parameter = [
       "-i",
       obj.urlRTSP,
       "-fflags",
@@ -101,15 +98,15 @@ async function startLiveCamera() {
       "-max_delay",
       "2",
       "-flags",
-      "-global_header",
+      "global_header",
       "-hls_time",
       "2",
       "-hls_list_size",
       "3",
       // "-vf",
-      // "detect_face=detect.json",
-      "-vcodec",
-      "copy",
+      // "detect_face=mode=model:detect.json", // Adjust according to actual filter syntax
+      "-c:v",
+      "libx264", // Example video codec, you can choose a suitable one
       "-y",
       pathStream,
     ];
@@ -128,19 +125,19 @@ async function startLiveCamera() {
         console.log("FFmpeg process closed with code " + code);
       });
 
-      // const rec = new Recorder({
-      //   url: obj.urlRTSP,
-      //   folder: join(__dirname, "/videos/record"),
-      //   name: obj.deviceName.replace(/\s/g, ""),
-      //   directoryPathFormat: "YYYYMMDD",
-      //   fileNameFormat: "HHmmss",
-      //   type: 'video',
-      //   audioCodec: 'aac',
-      //   timeLimit: 60,
-      //   videoCodec: 'h264',
-      // });
+      const rec = new Recorder({
+        url: obj.urlRTSP,
+        folder: join(__dirname, "/videos/record"),
+        name: obj.deviceName.replace(/\s/g, ""),
+        directoryPathFormat: "YYYYMMDD",
+        fileNameFormat: "HHmmss",
+        type: 'video',
+        audioCodec: 'aac',
+        timeLimit: 60,
+        videoCodec: 'h264',
+      });
 
-      // rec.startRecording();
+      rec.startRecording();
 
       const snapshot = new Recorder({
         url: obj.urlRTSP,
@@ -185,26 +182,23 @@ async function startLiveCamera() {
           // Load face-api.js models
           await loadModels();
 
-          const fs = require('fs');
           // Perform face detection on the image
           const detectedFacesCount = await detectFaces(imagePath);
           if (detectedFacesCount > 0) {
             console.log('Face detected!');
 
             // Convert the image to base64
-            const imageData =  fs.readFileSync(imagePath, 'base64');
+            const fs = require('fs');
+            const imageData = fs.readFileSync(imagePath, 'base64');
 
             // console.log('Image in base64:', imageData);
 
             // Now, you can proceed with your face comparison and API calls
-            faceCompareChina({
-              imageData: imageData,
-            });
-            fs.unlinkSync(imagePath);
+            // faceCompareChina({
+            //   imageData: imageData,
+            // });
           } else {
             console.log('No faces detected.');
-            fs.unlinkSync(imagePath);
-            console.log('Image file deleted.');
           }
         } catch (error) {
           console.error('Error capturing and logging image:', error);

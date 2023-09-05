@@ -1,20 +1,27 @@
 const spawn = require("child_process").spawn;
+const { fork } = require("child_process");
+const path = require("path");
+
 const { join } = require("path");
 const Recorder = require("node-rtsp-recorder").Recorder;
 const axios = require("axios");
 const fs = require("fs").promises;
 
-const faceapi = require('face-api.js');
-const canvas = require('canvas');
+const faceapi = require("face-api.js");
+const canvas = require("canvas");
 const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
+
+const faceDetectionWorker = fork(
+  path.join(__dirname, "faceDetectionWorker_2.js")
+);
 
 // ... (Previous code)
 
 // Load the face-api.js models
 async function loadModels() {
-  await faceapi.nets.ssdMobilenetv1.loadFromDisk('models');
-  await faceapi.nets.faceLandmark68Net.loadFromDisk('models');
+  await faceapi.nets.ssdMobilenetv1.loadFromDisk("models");
+  await faceapi.nets.faceLandmark68Net.loadFromDisk("models");
 }
 
 // Detect faces using face-api.js
@@ -59,7 +66,6 @@ async function faceCompareChina(params) {
       const paramApiLocal = {
         name: response.data.data.imageID,
         image: "data:image/jpeg;base64," + params.imageData,
-        deviceId : params.deviceId,
       };
 
       const result = await axios.post(
@@ -80,11 +86,11 @@ async function startLiveCamera() {
       deviceName: "Kamera 1",
       urlRTSP: "rtsp://192.168.18.15:554/ch0_0.h264",
       IpAddress: "192.168.18.15",
-      deviceId : '92929dca03cf2da2bfdeb995a714d5a6'
+      deviceId: "92929dca03cf2da2bfdeb995a714d5a6",
     },
   ];
 
-  console.log("resultCameraData", resultCameraData);
+  //   console.log("resultCameraData", resultCameraData);
 
   for (const obj of resultCameraData) {
     const pathStream = join(
@@ -113,15 +119,13 @@ async function startLiveCamera() {
       "-y",
       pathStream,
     ];
-    
-    
 
     try {
       const processHLS = spawn(cmd_ffmpeg, args_parameter);
 
       processHLS.stderr.setEncoding("utf8");
       processHLS.stderr.on("data", function (data) {
-        console.log("FFmpeg stderr: " + data);
+        // console.log("FFmpeg stderr: " + data);
       });
 
       processHLS.on("close", function (code) {
@@ -148,8 +152,8 @@ async function startLiveCamera() {
         name: obj.deviceName.replace(/\s/g, ""),
         directoryPathFormat: "YYYYMMDD",
         fileNameFormat: "HHmmss",
-        type: 'image',
-        imageFormat: 'jpg',
+        type: "image",
+        imageFormat: "jpg",
         imageQuality: 100,
         imageWidth: 1280,
         imageHeight: 720,
@@ -160,54 +164,101 @@ async function startLiveCamera() {
       async function captureAndLogImage() {
         try {
           // Capture the image
-          await snapshot.captureImage();
 
           // Get the current timestamp for constructing the path
           const currentDate = new Date();
-          const yyyymmdd = `${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, '0')}${currentDate.getDate().toString().padStart(2, '0')}`;
-          const hhmmss = `${currentDate.getHours().toString().padStart(2, '0')}${currentDate.getMinutes().toString().padStart(2, '0')}${currentDate.getSeconds().toString().padStart(2, '0')}`;
+          const yyyymmdd = `${currentDate.getFullYear()}${(
+            currentDate.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, "0")}${currentDate
+            .getDate()
+            .toString()
+            .padStart(2, "0")}`;
+          const hhmmss = `${currentDate
+            .getHours()
+            .toString()
+            .padStart(2, "0")}${currentDate
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")}${currentDate
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
 
           // Construct the image path
           const imagePath = join(
             snapshot.folder,
             snapshot.name,
             yyyymmdd,
-            'image',
+            "image",
             `${hhmmss}.jpg`
           );
 
+          const imageFolder = path.dirname(imagePath);
+
+          await fs.readdir(imageFolder, (err, files) => {
+            if (err) {
+              console.error("Error reading directory:", err);
+              return;
+            }
+
+            // Filter out any non-JPG files
+            const jpgFiles = files.filter((file) => file.endsWith(".jpg"));
+
+            if (jpgFiles.length === 0) {
+              console.log("No JPG files found in the folder.");
+              return;
+            }
+
+            // Get the stats for each file and find the newest one
+            let newestFile = jpgFiles[0];
+            let newestTime = fs.statSync(
+              path.join(imageFolder, newestFile)
+            ).mtime;
+
+            jpgFiles.forEach((file) => {
+              const filePath = path.join(imageFolder, file);
+              const fileStats = fs.statSync(filePath);
+
+              if (fileStats.mtime > newestTime) {
+                newestFile = file;
+                newestTime = fileStats.mtime;
+              }
+            });
+
+            console.log("Newest JPG file:", newestFile);
+          });
+          // await snapshot.captureImage();
           // Log the image path and capture time
-          console.log('Captured image:', imagePath, 'at', currentDate);
+          console.log("Captured image:", imagePath, "at", currentDate);
 
           // Wait for a delay before detecting faces
-          await new Promise(resolve => setTimeout(resolve, 5000)); // Adjust delay as needed
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Adjust delay as needed
 
           // Load face-api.js models
-          await loadModels();
+          //   await loadModels();
 
-          const fs = require('fs');
-          // Perform face detection on the image
-          const detectedFacesCount = await detectFaces(imagePath);
-          if (detectedFacesCount > 0) {
-            console.log('Face detected!');
+          // Send a message to the worker to start face detection
+        //   faceDetectionWorker.send({ type: "startDetection", imagePath });
 
-            // Convert the image to base64
-            const imageData =  fs.readFileSync(imagePath, 'base64');
+        //   faceDetectionWorker.on("message", (message) => {
+        //     if (message.type === "facesDetected") {
+        //       const imageData = message.imageData;
 
-            // console.log('Image in base64:', imageData);
-
-            // Now, you can proceed with your face comparison and API calls
-            faceCompareChina({
-              imageData: imageData,
-            });
-            fs.unlinkSync(imagePath);
-          } else {
-            console.log('No faces detected.');
-            fs.unlinkSync(imagePath);
-            console.log('Image file deleted.');
-          }
+        //       // Now, you can proceed with your face comparison and API calls
+        //       faceCompareChina({
+        //         imageData: imageData,
+        //       });
+        //     } else if (message.type === "noFacesDetected") {
+        //       console.log("No faces detected.");
+        //       console.log("Image file deleted.");
+        //     } else if (message.type === "error") {
+        //       console.error("Error in face detection:", message.error);
+        //     }
+        //   });
         } catch (error) {
-          console.error('Error capturing and logging image:', error);
+          console.error("Error capturing and logging image:", error);
         }
       }
 
@@ -221,3 +272,4 @@ async function startLiveCamera() {
 }
 
 startLiveCamera();
+module.exports = { loadModels, detectFaces, imageToBase64, faceCompareChina };
